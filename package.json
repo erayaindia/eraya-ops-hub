@@ -1,0 +1,13 @@
+{
+  "name": "lumen-orders",
+  "version": "1.0.0",
+  "description": "Complete Business Management System",
+  "scripts": {
+    "build": "echo 'Python app - no build step required'",
+    "start": "python -m uvicorn app:app --host 0.0.0.0 --port ${PORT:-10000}",
+    "dev": "python -m uvicorn app:app --reload --host 0.0.0.0 --port 8000"
+  },
+  "keywords": ["python", "fastapi", "business-management"],
+  "author": "",
+  "license": "ISC"
+}
