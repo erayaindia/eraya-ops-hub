@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Logout Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #1a1a1a; color: white; }
+        button { padding: 10px 20px; margin: 10px; border: none; border-radius: 5px; cursor: pointer; }
+        .success { background: #4CAF50; color: white; }
+        .error { background: #f44336; color: white; }
+        .info { background: #2196F3; color: white; }
+        #output { background: #333; padding: 15px; border-radius: 5px; margin-top: 20px; min-height: 200px; }
+    </style>
+</head>
+<body>
+    <h1>Simple Logout Test</h1>
+    
+    <button onclick="testLogoutFunction()" class="info">1. Test Logout Function</button>
+    <button onclick="testLogoutAPI()" class="info">2. Test Logout API</button>
+    <button onclick="clearOutput()" class="error">Clear Output</button>
+    
+    <div id="output">
+        <p>Click the buttons above to test logout functionality...</p>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            const output = document.getElementById('output');
+            const timestamp = new Date().toLocaleTimeString();
+            const color = type === 'error' ? '#ff6b6b' : type === 'success' ? '#51cf66' : '#74c0fc';
+            output.innerHTML += `<p style="color: ${color}">[${timestamp}] ${message}</p>`;
+            output.scrollTop = output.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearOutput() {
+            document.getElementById('output').innerHTML = '<p>Output cleared...</p>';
+        }
+        
+        function testLogoutFunction() {
+            log('Testing logout function availability...');
+            
+            if (typeof logout === 'function') {
+                log('✅ logout function is available', 'success');
+                log('Calling logout function...', 'info');
+                logout();
+            } else {
+                log('❌ logout function is NOT available', 'error');
+                log('This means the JavaScript file is not loading properly', 'error');
+            }
+        }
+        
+        async function testLogoutAPI() {
+            log('Testing logout API endpoint...', 'info');
+            
+            try {
+                log('Making POST request to /api/auth/logout...', 'info');
+                
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                log(`✅ API Response: ${response.status} ${response.statusText}`, 'success');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`✅ Response data: ${JSON.stringify(data)}`, 'success');
+                } else {
+                    log(`❌ API returned error status`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Fetch error: ${error.message}`, 'error');
+            }
+        }
+        
+        // Check on page load
+        window.addEventListener('load', function() {
+            log('Page loaded, checking logout function...', 'info');
+            if (typeof logout === 'function') {
+                log('✅ logout function is available on page load', 'success');
+            } else {
+                log('❌ logout function is NOT available on page load', 'error');
+            }
+        });
+    </script>
+</body>
+</html>

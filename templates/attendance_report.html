@@ -1,0 +1,183 @@
+{% extends "layout_base.html" %}
+{% block content %}
+
+<section class="glass p-6">
+  <h1 class="text-3xl font-bold">Attendance Report</h1>
+  <p class="text-white/80 mt-2">Generate and view detailed attendance reports.</p>
+  
+  <div class="mt-6 grid gap-6">
+    <!-- Report Filters -->
+    <div class="glass p-5">
+      <h2 class="text-xl font-semibold mb-4">Report Filters</h2>
+      <div class="flex flex-wrap gap-4">
+        <div>
+          <label class="block text-sm text-white/60 mb-2">Start Date</label>
+          <input type="date" id="startDate" class="rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block text-sm text-white/60 mb-2">End Date</label>
+          <input type="date" id="endDate" class="rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white">
+        </div>
+        <div>
+          <label class="block text-sm text-white/60 mb-2">Employee</label>
+          <select id="employeeSelect" class="rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white">
+            <option value="">All Employees</option>
+            <option value="emp1">Employee 1</option>
+            <option value="emp2">Employee 2</option>
+          </select>
+        </div>
+        <div class="flex items-end">
+          <button id="generateReport" class="btn btn-primary">📊 Generate Report</button>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Report Summary -->
+    <div class="glass p-5">
+      <h2 class="text-xl font-semibold mb-4">Report Summary</h2>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+          <div class="text-2xl font-bold text-blue-400" id="totalDays">0</div>
+          <div class="text-sm text-white/60">Total Days</div>
+        </div>
+        <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+          <div class="text-2xl font-bold text-green-400" id="presentDays">0</div>
+          <div class="text-sm text-white/60">Present Days</div>
+        </div>
+        <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+          <div class="text-2xl font-bold text-red-400" id="absentDays">0</div>
+          <div class="text-sm text-white/60">Absent Days</div>
+        </div>
+        <div class="bg-slate-800/50 p-4 rounded-lg text-center">
+          <div class="text-2xl font-bold text-purple-400" id="totalHours">0.0</div>
+          <div class="text-sm text-white/60">Total Hours</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Detailed Report -->
+    <div class="glass p-5">
+      <div class="flex justify-between items-center mb-4">
+        <h2 class="text-xl font-semibold">Detailed Report</h2>
+        <div class="flex gap-3">
+          <button id="exportReport" class="btn btn-secondary">📊 Export to Excel</button>
+          <button id="printReport" class="btn btn-secondary">🖨️ Print</button>
+        </div>
+      </div>
+      
+      <!-- Report Table -->
+      <div class="overflow-auto">
+        <table class="min-w-full text-sm" id="reportTable">
+          <thead class="bg-slate-900/80">
+            <tr>
+              <th class="text-left p-3 border-b border-white/10">Date</th>
+              <th class="text-left p-3 border-b border-white/10">Employee</th>
+              <th class="text-left p-3 border-b border-white/10">Status</th>
+              <th class="text-left p-3 border-b border-white/10">Clock In</th>
+              <th class="text-left p-3 border-b border-white/10">Clock Out</th>
+              <th class="text-left p-3 border-b border-white/10">Hours</th>
+              <th class="text-left p-3 border-b border-white/10">Overtime</th>
+            </tr>
+          </thead>
+          <tbody id="reportTableBody">
+            <!-- Report data will be loaded here -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+    
+    <!-- Charts -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <!-- Attendance Trend Chart -->
+      <div class="glass p-5">
+        <h2 class="text-xl font-semibold mb-4">Attendance Trend</h2>
+        <div id="attendanceChart" class="h-64 bg-slate-800/30 p-4 rounded-lg">
+          <!-- Chart will be generated here -->
+        </div>
+      </div>
+      
+      <!-- Hours Distribution Chart -->
+      <div class="glass p-5">
+        <h2 class="text-xl font-semibold mb-4">Hours Distribution</h2>
+        <div id="hoursChart" class="h-64 bg-slate-800/30 p-4 rounded-lg">
+          <!-- Chart will be generated here -->
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize date inputs with current month
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    document.getElementById('startDate').value = firstDay.toISOString().split('T')[0];
+    document.getElementById('endDate').value = lastDay.toISOString().split('T')[0];
+    
+    // Generate initial report
+    generateReport();
+    
+    // Event listeners
+    document.getElementById('generateReport').addEventListener('click', generateReport);
+    document.getElementById('exportReport').addEventListener('click', exportReport);
+    document.getElementById('printReport').addEventListener('click', printReport);
+});
+
+async function generateReport() {
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const employee = document.getElementById('employeeSelect').value;
+    
+    try {
+        const response = await fetch(`/api/attendance/report?start_date=${startDate}&end_date=${endDate}&user_id=${employee}`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayReport(data);
+        } else {
+            console.error('Failed to generate report:', data);
+        }
+    } catch (error) {
+        console.error('Error generating report:', error);
+    }
+}
+
+function displayReport(data) {
+    // Update summary
+    document.getElementById('totalDays').textContent = data.summary.total_days;
+    document.getElementById('presentDays').textContent = data.summary.present_days;
+    document.getElementById('absentDays').textContent = data.summary.absent_days;
+    document.getElementById('totalHours').textContent = data.summary.total_hours;
+    
+    // Update table
+    const tbody = document.getElementById('reportTableBody');
+    tbody.innerHTML = '';
+    
+    data.details.forEach(record => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td class="p-3 border-b border-white/10">${record.date}</td>
+            <td class="p-3 border-b border-white/10">Employee</td>
+            <td class="p-3 border-b border-white/10">${record.status}</td>
+            <td class="p-3 border-b border-white/10">${record.check_in}</td>
+            <td class="p-3 border-b border-white/10">${record.check_out}</td>
+            <td class="p-3 border-b border-white/10">${record.hours}</td>
+            <td class="p-3 border-b border-white/10">0.0</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+function exportReport() {
+    alert('Export functionality coming soon!');
+}
+
+function printReport() {
+    window.print();
+}
+</script>
+
+{% endblock %}

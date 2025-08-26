@@ -1,0 +1,236 @@
+{% extends "layout_base.html" %}
+{% block content %}
+<!-- Support Tickets CSS -->
+<link rel="stylesheet" href="{{ url_for('static', path='css/support-tickets.css') }}">
+
+<!-- Support Tickets JavaScript -->
+<script type="module" src="{{ url_for('static', path='js/support-tickets.js') }}"></script>
+
+<!-- Pass Supabase credentials to JavaScript -->
+<script>
+  window.SUPABASE_URL = "{{ supabase_url }}";
+  window.SUPABASE_KEY = "{{ supabase_key }}";
+</script>
+
+<!-- Enhanced Support Tickets Header -->
+<div class="flex items-center justify-between mb-8 p-8 pb-6">
+  <div>
+    <h1 class="text-3xl font-bold text-white mb-3 bg-gradient-to-r from-white to-white/80 bg-clip-text text-transparent">Support Tickets</h1>
+    <p class="text-white/70 text-lg">Manage and track customer support requests efficiently</p>
+  </div>
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-2 px-4 py-2 rounded-xl bg-white/10 border border-white/20 backdrop-blur-sm">
+      <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+      <span class="text-sm text-white/80">Live</span>
+  </div>
+    <button id="themeToggle" class="enhanced-btn secondary" title="Toggle theme">
+      <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 3v1m0 16v1m8-9h1M3 12H2m14.95 6.95.7.7M5.35 6.35l-.7-.7m0 12.7.7.7m13.3-13.3-.7-.7M16 12a4 4 0 1 1-8 0 4 4 0 0 1 8 0Z"/></svg>
+    </button>
+  </div>
+</div>
+
+<!-- Support Tickets Content -->
+<div class="glass h-full min-h-screen flex flex-col support-tickets-full rounded-none">
+  <!-- Enhanced Toolbar -->
+  <div class="flex flex-wrap items-center gap-4 mb-6 p-8 pb-6">
+    <div class="relative flex-1 min-w-[280px]">
+      <input id="search" type="search" placeholder="Search tickets, names, emails, orders, summaries…" class="enhanced-search w-full pl-12 pr-4" />
+      <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-white/60" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m21 21-4.3-4.3m0 0A7.5 7.5 0 1 0 5 5a7.5 7.5 0 0 0 11.7 11.7Z"/></svg>
+    </div>
+    <div class="flex gap-3">
+      <select id="status" class="enhanced-select min-w-[160px]"><option value="">All Status</option></select>
+      <select id="issue_type" class="enhanced-select min-w-[180px]"><option value="">All Issue Types</option></select>
+      <select id="priority" class="enhanced-select min-w-[160px]"><option value="">All Priorities</option><option>normal</option><option>high</option></select>
+    </div>
+    <div class="flex items-center gap-3 ml-auto">
+      <div class="relative">
+        <button id="columnBtn" class="enhanced-btn secondary">Columns
+          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="m6 9 6 6 6-6"/></svg>
+        </button>
+        <div id="columnMenu" class="hidden absolute right-0 mt-3 w-64 rounded-2xl border border-white/20 bg-slate-800/95 backdrop-blur-xl shadow-2xl p-3 text-sm z-10">
+          <!-- checkboxes injected -->
+        </div>
+      </div>
+      <select id="pageSize" class="enhanced-select"><option>10</option><option selected>25</option><option>50</option><option>100</option></select>
+      <button id="refresh" class="enhanced-btn primary">Refresh
+        <svg class="h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M16 8a6 6 0 1 0 2 4.65M16 8V4m0 4h4"/></svg>
+      </button>
+      <div class="enhanced-meta" id="count"></div>
+    </div>
+  </div>
+
+  <!-- Enhanced Quick Chips -->
+  <div class="flex flex-wrap gap-3 mb-6 text-sm px-8">
+    <button data-chip="status:new" class="enhanced-chip">🆕 New</button>
+    <button data-chip="priority:high" class="enhanced-chip">🔥 High Priority</button>
+    <button data-chip="channel:Instagram DM" class="enhanced-chip">📱 Instagram DM</button>
+    <button data-chip="status:open" class="enhanced-chip">📖 Open</button>
+    <button data-chip="status:waiting" class="enhanced-chip">⏳ Waiting</button>
+    <button id="clearChips" class="enhanced-chip">🗑️ Clear All</button>
+  </div>
+
+  <!-- Error banner -->
+  <div id="errorBox" class="hidden mb-4 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-950/40 text-red-700 dark:text-red-300 px-4 py-3 text-sm mx-6"></div>
+
+  <!-- Enhanced Card/Table -->
+  <div class="support-tickets-table mx-8 mb-8 flex-1 flex flex-col min-h-0">
+    <div class="flex items-center gap-3 px-6 py-4 border-b border-white/20 text-sm text-white/70 bg-white/5">
+      <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-400">
+        <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span> 
+        Connected to Supabase
+      </span>
+      <span class="ml-auto enhanced-meta" id="meta"></span>
+    </div>
+    <div id="tableWrap" class="overflow-auto flex-1 min-h-0">
+      <table class="w-full text-sm">
+        <thead class="sticky top-0 z-[1]">
+          <tr id="headRow"></tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </div>
+    <div class="enhanced-pagination">
+      <button id="prev" class="enhanced-btn secondary">◀ Previous</button>
+      <span id="pageInfo" class="text-white/70"></span>
+      <button id="next" class="enhanced-btn secondary">Next ▶</button>
+      <div class="ml-auto text-white/50 text-sm">Click a row to open details • Click a column to sort</div>
+      <div id="metaBar" class="text-white/70"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Container for Phase 2 -->
+<div id="notificationContainer" class="notification-container"></div>
+
+<!-- Details Sheet -->
+<div id="sheetRoot" class="fixed inset-0 z-30 hidden" aria-hidden="true">
+  <div id="sheetOverlay" class="absolute inset-0 bg-black/50 opacity-0 transition-opacity duration-200"></div>
+  <div id="sheet" class="absolute right-0 top-0 h-full w-full max-w-2xl enhanced-sheet transform translate-x-full transition-transform duration-200 ease-out">
+    <div class="enhanced-sheet-header flex items-center justify-between p-6">
+      <div>
+        <h2 id="sheetTitle" class="text-xl font-semibold text-white"></h2>
+        <p id="sheetSub" class="text-sm text-white/70 mt-1"></p>
+      </div>
+      <button id="closeSheet" class="text-white/70 hover:text-white transition-colors">
+        <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="enhanced-sheet-content">
+      <!-- Status & Priority -->
+      <div class="enhanced-sheet-section">
+        <h3>Status & Priority</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-white/70">Status</label>
+            <div id="d_status" class="mt-1"></div>
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Priority</label>
+            <div id="d_priority" class="mt-1"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Channel & Issue Type -->
+      <div class="enhanced-sheet-section">
+        <h3>Channel & Issue</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-white/70">Channel</label>
+            <div id="d_channel" class="mt-1 text-white"></div>
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Issue Type</label>
+            <div id="d_issue" class="mt-1 text-white"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Customer Info -->
+      <div class="enhanced-sheet-section">
+        <h3>Customer Information</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm text-white/70">Customer Name</label>
+            <div id="d_name" class="mt-1 text-white font-medium"></div>
+          </div>
+          
+          <div>
+            <label class="text-sm text-white/70">Contact</label>
+            <div id="d_contact" class="mt-1 text-white"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Summary & Description -->
+      <div class="enhanced-sheet-section">
+        <h3>Ticket Details</h3>
+        <div class="space-y-4">
+          <div>
+            <label class="text-sm text-white/70">Summary</label>
+            <div id="d_summary" class="mt-1 text-white"></div>
+          </div>
+          
+          <div>
+            <label class="text-sm text-white/70">Description</label>
+            <div id="d_description" class="mt-1 text-white"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Order & Timezone -->
+      <div class="enhanced-sheet-section">
+        <h3>Order & Time</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-white/70">Order ID</label>
+            <div id="d_order" class="mt-1 text-white"></div>
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Timezone</label>
+            <div id="d_tz" class="mt-1 text-white"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Timestamps -->
+      <div class="enhanced-sheet-section">
+        <h3>Timestamps</h3>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="text-sm text-white/70">Created</label>
+            <div id="d_created" class="mt-1 text-white"></div>
+          </div>
+          <div>
+            <label class="text-sm text-white/70">Updated</label>
+            <div id="d_updated" class="mt-1 text-white"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Actions -->
+      <div class="enhanced-sheet-section">
+        <h3>Quick Actions</h3>
+        <div class="flex gap-3">
+          <button id="copyId" class="enhanced-btn secondary">Copy ID</button>
+          <a id="mailto" href="#" class="enhanced-btn secondary">Email</a>
+          <a id="tel" href="#" class="enhanced-btn secondary">Call</a>
+        </div>
+      </div>
+      
+      <!-- Raw Data -->
+      <div class="enhanced-sheet-section">
+        <h3>Raw Data</h3>
+        <details class="pt-2">
+          <summary class="text-sm text-white/70 cursor-pointer hover:text-white">Show Raw Data</summary>
+          <pre id="d_json" class="mt-2 p-3 bg-slate-800 rounded text-xs text-white/70 overflow-auto"></pre>
+        </details>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,99 @@
+/* ========================================
+   CENTRALIZED THEME CONFIGURATION
+   ========================================
+   Change colors here to update the entire site!
+   ======================================== */
+
+:root {
+    /* ===== SIDEBAR DIMENSIONS ===== */
+    --sidebar-width: 280px;
+    --sidebar-collapsed-width: 80px;
+    
+    /* ===== MAIN BACKGROUND COLORS ===== */
+    --bg-primary: #0f172a;          /* Main background start */
+    --bg-secondary: #1e1b4b;        /* Main background end */
+    --bg-sidebar: rgba(17, 24, 39, 0.7);  /* Sidebar background */
+    --bg-glass: rgba(17, 24, 39, 0.7);   /* Glass effect background */
+    
+    /* ===== TEXT COLORS ===== */
+    --text-primary: white;                    /* Main headings */
+    --text-secondary: rgba(255, 255, 255, 0.6);   /* Subtitles */
+    --text-nav: rgba(255, 255, 255, 0.7);         /* Navigation items */
+    --text-muted: rgba(255, 255, 255, 0.4);       /* Section dividers */
+    --text-disabled: rgba(255, 255, 255, 0.5);    /* Disabled items */
+    
+    /* ===== ACCENT COLORS ===== */
+    --accent-primary: rgb(168, 85, 247);    /* Purple - Active states */
+    --accent-secondary: rgb(59, 130, 246);  /* Blue - Alternative accent */
+    --accent-success: rgb(34, 197, 94);     /* Green - Success states */
+    --accent-warning: rgb(245, 158, 11);    /* Yellow - Warning states */
+    --accent-danger: rgb(239, 68, 68);      /* Red - Error/Badges */
+    
+    /* ===== INTERACTIVE STATES ===== */
+    --hover-bg: rgba(255, 255, 255, 0.1);         /* Hover background */
+    --hover-text: white;                           /* Hover text */
+    --active-bg: rgba(168, 85, 247, 0.2);         /* Active background */
+    --active-border: rgb(168, 85, 247);           /* Active border */
+    
+    /* ===== BORDER COLORS ===== */
+    --border-primary: rgba(255, 255, 255, 0.1);   /* Main borders */
+    --border-secondary: rgba(255, 255, 255, 0.2); /* Secondary borders */
+    --border-accent: rgba(168, 85, 247, 0.3);     /* Accent borders */
+    
+    /* ===== BADGE COLORS ===== */
+    --badge-bg: rgba(239, 68, 68, 0.2);          /* Badge background */
+    --badge-text: rgb(252, 165, 165);             /* Badge text */
+    
+    /* ===== SHADOW COLORS ===== */
+    --shadow-light: rgba(0, 0, 0, 0.1);          /* Light shadows */
+    --shadow-medium: rgba(0, 0, 0, 0.2);         /* Medium shadows */
+    --shadow-heavy: rgba(0, 0, 0, 0.3);          /* Heavy shadows */
+    
+    /* ===== TRANSITIONS ===== */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+    
+    /* ===== GLASS EFFECTS ===== */
+    --glass-blur: 10px;
+    --glass-opacity: 0.7;
+}
+
+/* ===== LIGHT THEME VARIABLES (for future use) ===== */
+[data-theme="light"] {
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8fafc;
+    --bg-sidebar: rgba(248, 250, 252, 0.9);
+    --bg-glass: rgba(248, 250, 252, 0.9);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-nav: #64748b;
+    --text-muted: #94a3b8;
+    --text-disabled: #cbd5e1;
+    
+    --border-primary: rgba(0, 0, 0, 0.1);
+    --border-secondary: rgba(0, 0, 0, 0.2);
+    --border-accent: rgba(168, 85, 247, 0.3);
+    
+    --shadow-light: rgba(0, 0, 0, 0.05);
+    --shadow-medium: rgba(0, 0, 0, 0.1);
+    --shadow-heavy: rgba(0, 0, 0, 0.2);
+}
+
+/* ===== COLOR UTILITY CLASSES ===== */
+.text-primary { color: var(--text-primary) !important; }
+.text-secondary { color: var(--text-secondary) !important; }
+.text-nav { color: var(--text-nav) !important; }
+.text-muted { color: var(--text-muted) !important; }
+.text-accent { color: var(--accent-primary) !important; }
+
+.bg-primary { background-color: var(--bg-primary) !important; }
+.bg-secondary { background-color: var(--bg-secondary) !important; }
+.bg-sidebar { background-color: var(--bg-sidebar) !important; }
+.bg-glass { background-color: var(--bg-glass) !important; }
+.bg-accent { background-color: var(--accent-primary) !important; }
+
+.border-primary { border-color: var(--border-primary) !important; }
+.border-secondary { border-color: var(--border-secondary) !important; }
+.border-accent { border-color: var(--border-accent) !important; }

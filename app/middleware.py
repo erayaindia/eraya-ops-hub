@@ -19,6 +19,9 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         self.exempt_paths = {
             "/api/auth/login",
             "/api/auth/logout",
+            "/api/auth/request-password-reset",  # Password reset request
+            "/api/auth/reset-password",  # Password reset form
+            "/api/auth/csrf",  # CSRF token endpoint
             "/api/process",  # File processing endpoint
             "/api/packing/preview",  # File preview endpoint
             "/api/chat/upload",  # File upload endpoint
@@ -26,6 +29,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             "/api/shopify/test-connection",  # Shopify connection test
             "/api/shopify/sync",  # Shopify sync
             "/api/shopify/instant-sync",  # Shopify instant sync
+            "/api/users",  # User management endpoints
+            "/api/users/stats/statistics",  # User statistics
         }
     
     def generate_csrf_token(self) -> str:
@@ -65,7 +70,10 @@ class CSRFMiddleware(BaseHTTPMiddleware):
             self.cleanup_expired_tokens()
         
         # Skip CSRF check for exempt paths
-        if request.url.path in self.exempt_paths:
+        path = request.url.path
+        if (path in self.exempt_paths or 
+            path.startswith("/api/users/") or  # Individual user operations
+            path == "/api/users"):              # User listing and creation
             return await call_next(request)
         
         # Skip CSRF check for non-modifying methods
@@ -78,8 +86,8 @@ class CSRFMiddleware(BaseHTTPMiddleware):
         # Check header first
         if "X-CSRF-Token" in request.headers:
             csrf_token = request.headers["X-CSRF-Token"]
-        # Fall back to form data
-        elif request.method == "POST":
+        # Fall back to form data for all modifying methods
+        elif request.method in ["POST", "PATCH", "DELETE"]:
             try:
                 form_data = await request.form()
                 csrf_token = form_data.get("csrf_token")

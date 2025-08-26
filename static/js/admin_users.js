@@ -1,5 +1,6 @@
 /**
  * Admin Users Management - Frontend JavaScript
+ * Connected to Supabase backend via FastAPI
  */
 
 class AdminUsers {
@@ -24,6 +25,7 @@ class AdminUsers {
     init() {
         this.bindEvents();
         this.loadUsers();
+        this.updateURLParams();
         
         // Auto-refresh every 30 seconds to keep data in sync
         setInterval(() => {
@@ -43,36 +45,37 @@ class AdminUsers {
             this.searchTimeout = setTimeout(() => {
                 this.currentQuery = e.target.value;
                 this.currentPage = 1;
+                this.updateURLParams();
                 this.loadUsers();
             }, 300);
         });
 
-        // Refresh button
+        // Refresh buttons
         document.getElementById('refreshBtn').addEventListener('click', () => {
             this.loadUsers();
         });
 
-        // Force refresh button
         document.getElementById('forceRefreshBtn').addEventListener('click', () => {
             this.forceRefreshUsers();
         });
 
-        // Hard refresh button (reloads entire page)
         document.getElementById('hardRefreshBtn').addEventListener('click', () => {
             console.log('🔄 Hard refresh - reloading page...');
-            window.location.reload(true); // true = force reload from server
+            window.location.reload(true);
         });
 
         // Filters
         document.getElementById('roleFilter').addEventListener('change', (e) => {
             this.currentRoleFilter = e.target.value;
             this.currentPage = 1;
+            this.updateURLParams();
             this.loadUsers();
         });
 
         document.getElementById('statusFilter').addEventListener('change', (e) => {
             this.currentStatusFilter = e.target.value;
             this.currentPage = 1;
+            this.updateURLParams();
             this.loadUsers();
         });
 
@@ -80,6 +83,7 @@ class AdminUsers {
         document.getElementById('sortSelect').addEventListener('change', (e) => {
             this.currentSort = e.target.value;
             this.currentPage = 1;
+            this.updateURLParams();
             this.loadUsers();
         });
 
@@ -87,6 +91,7 @@ class AdminUsers {
         document.getElementById('limitSelect').addEventListener('change', (e) => {
             this.currentLimit = parseInt(e.target.value);
             this.currentPage = 1;
+            this.updateURLParams();
             this.loadUsers();
         });
 
@@ -94,12 +99,14 @@ class AdminUsers {
         document.getElementById('prevBtn').addEventListener('click', () => {
             if (this.currentPage > 1) {
                 this.currentPage--;
+                this.updateURLParams();
                 this.loadUsers();
             }
         });
 
         document.getElementById('nextBtn').addEventListener('click', () => {
             this.currentPage++;
+            this.updateURLParams();
             this.loadUsers();
         });
 
@@ -107,6 +114,14 @@ class AdminUsers {
         document.getElementById('addUserBtn').addEventListener('click', () => {
             this.openUserModal();
         });
+
+        // Add user button in empty state
+        const addUserBtnEmpty = document.getElementById('addUserBtnEmpty');
+        if (addUserBtnEmpty) {
+            addUserBtnEmpty.addEventListener('click', () => {
+                this.openUserModal();
+            });
+        }
 
         document.getElementById('closeModalBtn').addEventListener('click', () => {
             this.closeUserModal();
@@ -122,6 +137,7 @@ class AdminUsers {
 
         // Form submissions
         document.getElementById('userForm').addEventListener('submit', (e) => {
+            console.log('🎯 Form submit event triggered');
             this.handleUserFormSubmit(e);
         });
 
@@ -150,6 +166,28 @@ class AdminUsers {
                 this.closeDeleteModal();
             }
         });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                this.closeUserModal();
+                this.closeDeleteModal();
+            }
+        });
+    }
+
+    updateURLParams() {
+        const params = new URLSearchParams();
+        if (this.currentQuery) params.set('q', this.currentQuery);
+        if (this.currentRoleFilter !== 'all') params.set('role', this.currentRoleFilter);
+        if (this.currentStatusFilter !== 'all') params.set('status', this.currentStatusFilter);
+        if (this.currentSort !== 'created_at') params.set('sort', this.currentSort);
+        if (this.currentOrder !== 'desc') params.set('order', this.currentOrder);
+        if (this.currentPage > 1) params.set('page', this.currentPage);
+        if (this.currentLimit !== 10) params.set('limit', this.currentLimit);
+        
+        const newURL = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+        window.history.replaceState({}, '', newURL);
     }
 
     async loadUsers() {
@@ -157,18 +195,14 @@ class AdminUsers {
             this.showLoading();
             
             const params = new URLSearchParams({
-                query: this.currentQuery,
+                q: this.currentQuery,
                 page: this.currentPage,
                 limit: this.currentLimit,
                 sort: this.currentSort,
                 order: this.currentOrder,
-                role_filter: this.currentRoleFilter,
-                status_filter: this.currentStatusFilter
+                role: this.currentRoleFilter,
+                status: this.currentStatusFilter
             });
-
-            // Add aggressive cache-busting parameters
-            params.append('_t', Date.now());
-            params.append('_v', Math.random().toString(36).substr(2, 9));
 
             console.log('🔄 Loading users with params:', params.toString());
             const response = await fetch(`/api/users?${params}`, {
@@ -181,59 +215,46 @@ class AdminUsers {
             });
             
             console.log('📡 Response status:', response.status);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
             console.log('📊 Received data:', data);
 
-            if (response.ok) {
-                // TEMPORARY DIAGNOSTIC LOGGING (as requested)
-                console.log('🔍 DIAGNOSTIC: loadUsers() returned items length:', data.items ? data.items.length : 'N/A');
-                console.log('🔍 DIAGNOSTIC: loadUsers() returned total:', data.total || 'N/A');
-                
-                // Store users in memory for optimistic updates
-                this.users = Array.isArray(data) ? data : (data.items || []);
-                this.totalUsers = Array.isArray(data) ? data.length : (data.total || 0);
-                
-                this.renderUsers(data);
-                this.updatePagination(data);
-                this.updateStatistics(data);
-            } else {
-                this.showError('Failed to load users');
-            }
+            // Store users in memory for optimistic updates
+            this.users = data.items || [];
+            this.totalUsers = data.total || 0;
+            
+            this.renderUsers(data);
+            this.updatePagination(data);
+            this.updateStatistics(data);
+            
         } catch (error) {
             console.error('Error loading users:', error);
-            this.showError('Failed to load users');
+            this.showError(`Failed to load users: ${error.message}`);
         } finally {
             this.hideLoading();
         }
     }
 
-    // Force refresh users (ignores cache)
     async forceRefreshUsers() {
         console.log('🔄 Force refreshing users...');
-        this.currentPage = 1; // Reset to page 1
+        this.currentPage = 1;
         
         // Clear any cached data
         this.currentQuery = '';
         this.currentRoleFilter = 'all';
         this.currentStatusFilter = 'all';
         
+        // Update URL params
+        this.updateURLParams();
+        
         // Force a completely fresh load
         await this.loadUsers();
         
-        // Also refresh the page statistics
         console.log('🔄 Force refresh completed');
-    }
-
-    // Reload users with current state (for background reconciliation)
-    async reloadUsers(options = {}) {
-        const { keepPage = false } = options;
-        
-        if (!keepPage) {
-            this.currentPage = 1;
-        }
-        
-        console.log('🔄 Reloading users with keepPage:', keepPage);
-        await this.loadUsers();
     }
 
     updateLastRefreshTime() {
@@ -296,8 +317,7 @@ class AdminUsers {
         const tbody = document.getElementById('usersTableBody');
         const emptyState = document.getElementById('emptyState');
 
-        // Handle both array format and object format
-        const users = Array.isArray(data) ? data : (data.items || []);
+        const users = data.items || [];
         
         console.log('🎨 Rendering users:', users);
         console.log('🎨 Users count:', users.length);
@@ -312,40 +332,49 @@ class AdminUsers {
         emptyState.classList.add('hidden');
         
         const userRows = users.map(user => `
-            <tr class="hover:bg-slate-800/30 border-b border-white/5" data-row-id="${user.id}">
-                <td class="p-3 text-white">
+            <tr class="hover:bg-slate-800/30 border-b border-white/5 transition-all duration-200" data-row-id="${user.id}">
+                <td class="p-4 text-white">
                     <div class="font-medium">${this.escapeHtml(user.name)}</div>
                 </td>
-                <td class="p-3 text-white/80">
+                <td class="p-4 text-white/80">
                     ${this.escapeHtml(user.email)}
                 </td>
-                <td class="p-3">
+                <td class="p-4">
                     <span class="role-${user.role}">
-                        ${this.escapeHtml(user.role)}
+                        ${this.getRoleDisplayName(user.role)}
                     </span>
                 </td>
-                <td class="p-3">
+                <td class="p-4">
                     <span class="status-${user.status}">
-                        ${this.escapeHtml(user.status)}
+                        ${this.getStatusDisplayName(user.status)}
                     </span>
                 </td>
-                <td class="p-3 text-white/80">
-                    ${this.escapeHtml(user.phone || '-')}
+                <td class="p-4 text-white/80" title="${this.escapeHtml(user.phone || '')}">
+                    ${this.truncateText(user.phone || '-', 15)}
                 </td>
-                <td class="p-3 text-white/80">
-                    ${this.escapeHtml(user.city || '-')}
+                <td class="p-4 text-white/80" title="${this.escapeHtml(user.city || '')}">
+                    ${this.truncateText(user.city || '-', 15)}
                 </td>
-                <td class="p-3 text-white/60 text-sm">
+                <td class="p-4 text-white/60 text-sm">
                     ${user.joining_date ? this.formatDate(user.joining_date) : '-'}
                 </td>
-                <td class="p-3 text-white/60 text-sm">
+                <td class="p-4 text-white/60 text-sm">
                     ${user.last_login ? this.formatDateTime(user.last_login) : 'Never'}
                 </td>
-                <td class="p-3">
-                    <button onclick="adminUsers.editUser('${user.id}')" 
-                            class="text-blue-300 mr-3 text-sm">Edit</button>
-                    <button onclick="adminUsers.confirmDeleteUser('${user.id}', '${this.escapeHtml(user.name)}')" 
-                            class="text-red-400 hover:text-red-300 text-sm" data-user-id="${user.id}">Delete</button>
+                <td class="p-4">
+                    <div class="flex items-center gap-2">
+                        <button onclick="adminUsers.editUser('${user.id}')" 
+                                class="inline-flex items-center gap-1 px-3 py-1 bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 rounded-lg text-sm transition-all duration-200 hover:scale-105">
+                            <span>✏️</span>
+                            <span>Edit</span>
+                        </button>
+                        <button onclick="adminUsers.confirmDeleteUser('${user.id}', '${this.escapeHtml(user.name)}')" 
+                                class="inline-flex items-center gap-1 px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-300 rounded-lg text-sm transition-all duration-200 hover:scale-105"
+                                data-user-id="${user.id}">
+                            <span>🗑️</span>
+                            <span>Delete</span>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `).join('');
@@ -360,22 +389,13 @@ class AdminUsers {
         const prevBtn = document.getElementById('prevBtn');
         const nextBtn = document.getElementById('nextBtn');
 
-        // Handle both array format and object format
-        if (Array.isArray(data)) {
-            // Simple array format - show all results on one page
-            resultsInfo.textContent = `1-${data.length} of ${data.length}`;
-            pageInfo.textContent = `Page 1 of 1`;
-            prevBtn.disabled = true;
-            nextBtn.disabled = true;
-        } else {
-            // Object format with pagination
-            const start = ((data.page - 1) * data.limit) + 1;
-            const end = Math.min(data.page * data.limit, data.total);
-            resultsInfo.textContent = `${start}-${end} of ${data.total}`;
-            pageInfo.textContent = `Page ${data.page} of ${data.pages}`;
-            prevBtn.disabled = data.page <= 1;
-            nextBtn.disabled = data.page >= data.pages;
-        }
+        const start = ((data.page - 1) * data.limit) + 1;
+        const end = Math.min(data.page * data.limit, data.total);
+        
+        resultsInfo.textContent = `${start}-${end} of ${data.total}`;
+        pageInfo.textContent = `Page ${data.page} of ${data.pages}`;
+        prevBtn.disabled = data.page <= 1;
+        nextBtn.disabled = data.page >= data.pages;
     }
 
     updateStatistics(data) {
@@ -384,12 +404,11 @@ class AdminUsers {
         const adminUsers = document.getElementById('adminUsers');
         const recentLogins = document.getElementById('recentLogins');
 
-        // Handle both array format and object format
-        const users = Array.isArray(data) ? data : (data.items || []);
+        const users = data.items || [];
         if (!users) return;
 
         // Calculate statistics
-        const total = Array.isArray(data) ? data.length : (data.total || 0);
+        const total = data.total || 0;
         const active = users.filter(user => user.status === 'active').length;
         const admins = users.filter(user => ['owner', 'admin'].includes(user.role)).length;
         
@@ -415,6 +434,7 @@ class AdminUsers {
         const passwordNote = document.getElementById('passwordNote');
         const passwordRequired = document.getElementById('passwordRequired');
         const confirmRequired = document.getElementById('confirmRequired');
+        const modalIcon = document.getElementById('modalIcon');
 
         // Reset form
         form.reset();
@@ -422,18 +442,25 @@ class AdminUsers {
 
         if (this.isEditing) {
             title.textContent = 'Edit User';
+            modalIcon.textContent = '✏️';
             passwordNote.classList.remove('hidden');
             passwordRequired.classList.add('hidden');
             confirmRequired.classList.add('hidden');
             this.fillUserForm(user);
         } else {
             title.textContent = 'Add User';
+            modalIcon.textContent = '➕';
             passwordNote.classList.add('hidden');
             passwordRequired.classList.remove('hidden');
             confirmRequired.classList.remove('hidden');
         }
 
         modal.classList.remove('hidden');
+        
+        // Focus first input
+        setTimeout(() => {
+            document.getElementById('userName').focus();
+        }, 100);
     }
 
     closeUserModal() {
@@ -456,32 +483,46 @@ class AdminUsers {
     async editUser(userId) {
         try {
             const response = await fetch(`/api/users/${userId}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            
             const data = await response.json();
 
-            if (response.ok && data.ok) {
+            if (data.ok) {
                 this.openUserModal(data.data);
             } else {
                 this.showError('Failed to load user details');
             }
         } catch (error) {
             console.error('Error loading user:', error);
-            this.showError('Failed to load user details');
+            this.showError(`Failed to load user details: ${error.message}`);
         }
     }
 
     async handleUserFormSubmit(e) {
         e.preventDefault();
+        console.log('📝 Form submission started');
         
         if (!this.validateForm()) {
+            console.log('❌ Form validation failed');
             return;
         }
+        
+        console.log('✅ Form validation passed');
 
         const formData = new FormData(e.target);
+        console.log('📋 Form data collected:');
+        for (let [key, value] of formData.entries()) {
+            console.log(`   ${key}: ${value}`);
+        }
+        
         const saveBtn = document.getElementById('saveBtn');
         
         try {
             saveBtn.disabled = true;
-            saveBtn.textContent = 'Saving...';
+            saveBtn.innerHTML = '<span class="animate-spin">⏳</span> Saving...';
 
             let url, method;
             if (this.isEditing) {
@@ -493,30 +534,86 @@ class AdminUsers {
                 method = 'POST';
             }
 
+            console.log('💾 Attempting to save user:', method, url);
+            console.log('💾 Form data contents:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`   ${key}: ${value}`);
+            }
             const response = await fetch(url, {
                 method: method,
                 body: formData
             });
+            console.log('💾 Save response status:', response.status, response.statusText);
 
-            const data = await response.json();
-
-            if (response.ok && data.ok) {
-                this.showSuccess(this.isEditing ? 'User updated successfully' : 'User created successfully');
-                this.closeUserModal();
-                this.loadUsers();
-            } else {
-                this.showError(data.error || 'Failed to save user');
-                if (data.error && data.error.includes('Email already exists')) {
-                    this.showFieldError('emailError', data.error);
+            if (response.ok) {
+                const data = await response.json();
+                if (data.ok) {
+                    this.showSuccess(this.isEditing ? 'User updated successfully' : 'User created successfully');
+                    this.closeUserModal();
+                    
+                    if (this.isEditing) {
+                        // Update the user in our local array
+                        const userId = document.getElementById('userId').value;
+                        const updatedUser = await this.getUserForUpdate(userId);
+                        if (updatedUser) {
+                            const index = this.users.findIndex(u => u.id === userId);
+                            if (index !== -1) {
+                                this.users[index] = { ...this.users[index], ...updatedUser };
+                            }
+                        }
+                    } else {
+                        // Add new user to local array (will be replaced by reload)
+                        const newUserId = data.id;
+                        const newUser = await this.getUserForUpdate(newUserId);
+                        if (newUser) {
+                            this.users.unshift(newUser);
+                            this.totalUsers++;
+                        }
+                    }
+                    
+                    // Reload users to get fresh data
+                    this.loadUsers();
+                } else {
+                    this.showError(data.error || 'Failed to save user');
+                    if (data.error && data.error.includes('Email already exists')) {
+                        this.showFieldError('emailError', 'Email already exists');
+                    }
                 }
+            } else {
+                // Handle error responses
+                let errorMessage = 'Failed to save user';
+                try {
+                    const data = await response.json();
+                    errorMessage = data.error || data.detail || errorMessage;
+                    if (data.error && data.error.includes('Email already exists')) {
+                        this.showFieldError('emailError', 'Email already exists');
+                    }
+                } catch (e) {
+                    // Response might not be JSON
+                    errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                }
+                this.showError(errorMessage);
             }
         } catch (error) {
             console.error('Error saving user:', error);
-            this.showError('Failed to save user');
+            this.showError(`Failed to save user: ${error.message}`);
         } finally {
             saveBtn.disabled = false;
-            saveBtn.textContent = 'Save User';
+            saveBtn.innerHTML = '<span class="group-hover:scale-110 transition-transform duration-200">💾</span><span>Save User</span>';
         }
+    }
+
+    async getUserForUpdate(userId) {
+        try {
+            const response = await fetch(`/api/users/${userId}`);
+            if (response.ok) {
+                const data = await response.json();
+                return data.data;
+            }
+        } catch (error) {
+            console.error('Error getting updated user:', error);
+        }
+        return null;
     }
 
     confirmDeleteUser(userId, userName) {
@@ -542,7 +639,7 @@ class AdminUsers {
         if (row && deleteBtn) {
             // Disable delete button and show "Deleting..." state
             deleteBtn.disabled = true;
-            deleteBtn.textContent = 'Deleting...';
+            deleteBtn.innerHTML = '<span class="animate-spin">⏳</span> Deleting...';
             deleteBtn.classList.add('opacity-50', 'cursor-not-allowed');
             
             // Remove row from DOM immediately
@@ -557,28 +654,28 @@ class AdminUsers {
         }
         
         try {
+            console.log('🗑️ Attempting to delete user:', userId);
+            console.log('🗑️ Form data contents:');
+            for (let [key, value] of formData.entries()) {
+                console.log(`   ${key}: ${value}`);
+            }
             const response = await fetch(`/api/users/${userId}`, {
                 method: 'DELETE',
-                body: formData,
-                headers: {
-                    'Cache-Control': 'no-cache, no-store, must-revalidate',
-                    'Pragma': 'no-cache'
-                }
+                body: formData
             });
-
-            const data = await response.json();
+            console.log('🗑️ Delete response status:', response.status, response.statusText);
 
             if (response.ok || response.status === 204) {
-                // Success (200 OK or 204 No Content) - remove from in-memory array
+                // Success - remove from in-memory array
                 this.users = this.users.filter(u => u.id !== userId);
                 this.showSuccess('User deleted successfully');
                 this.closeDeleteModal();
                 
                 // Background reconciliation
                 setTimeout(() => {
-                    this.reloadUsers({ keepPage: true });
+                    this.loadUsers();
                 }, 1000);
-            } else if (response.status === 404 || (data.error && data.error.includes('User not found'))) {
+            } else if (response.status === 404) {
                 // User already deleted - treat as success
                 this.users = this.users.filter(u => u.id !== userId);
                 this.showSuccess('User already deleted');
@@ -586,18 +683,26 @@ class AdminUsers {
                 
                 // Background reconciliation
                 setTimeout(() => {
-                    this.reloadUsers({ keepPage: true });
+                    this.loadUsers();
                 }, 1000);
             } else {
                 // Other errors - restore the row
-                this.showError(data.error || 'Failed to delete user');
+                let errorMessage = 'Failed to delete user';
+                try {
+                    const data = await response.json();
+                    errorMessage = data.error || data.detail || errorMessage;
+                } catch (e) {
+                    // Response might not be JSON
+                    errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                }
+                this.showError(errorMessage);
                 if (row && deleteBtn) {
                     this.restoreDeletedRow(row, deleteBtn, userId);
                 }
             }
         } catch (error) {
             console.error('Error deleting user:', error);
-            this.showError('Failed to delete user');
+            this.showError(`Failed to delete user: ${error.message}`);
             
             // Restore the row on error
             if (row && deleteBtn) {
@@ -615,10 +720,15 @@ class AdminUsers {
         const email = document.getElementById('userEmail').value.trim();
         
         if (!name) {
+            this.showFieldError('name', 'Name is required');
             isValid = false;
         }
 
         if (!email) {
+            this.showFieldError('email', 'Email is required');
+            isValid = false;
+        } else if (!this.isValidEmail(email)) {
+            this.showFieldError('email', 'Please enter a valid email address');
             isValid = false;
         }
 
@@ -661,6 +771,11 @@ class AdminUsers {
         return true;
     }
 
+    isValidEmail(email) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(email);
+    }
+
     clearErrors() {
         document.getElementById('emailError').classList.add('hidden');
         document.getElementById('passwordError').classList.add('hidden');
@@ -668,28 +783,30 @@ class AdminUsers {
 
     showFieldError(elementId, message) {
         const element = document.getElementById(elementId);
-        element.textContent = message;
-        element.classList.remove('hidden');
+        if (element) {
+            element.textContent = message;
+            element.classList.remove('hidden');
+        }
     }
 
-    getRoleBadgeClass(role) {
-        const classes = {
-            'owner': 'bg-purple-100 text-purple-800',
-            'admin': 'bg-red-100 text-red-800',
-            'manager': 'bg-blue-100 text-blue-800',
-            'employee': 'bg-green-100 text-green-800',
-            'packer': 'bg-gray-100 text-gray-800'
+    getRoleDisplayName(role) {
+        const roleNames = {
+            'owner': '👑 Owner',
+            'admin': '⚡ Admin',
+            'manager': '👔 Manager',
+            'employee': '👷 Employee',
+            'packer': '📦 Packer'
         };
-        return classes[role] || 'bg-gray-100 text-gray-800';
+        return roleNames[role] || role;
     }
 
-    getStatusBadgeClass(status) {
-        const classes = {
-            'active': 'bg-green-100 text-green-800',
-            'inactive': 'bg-gray-100 text-gray-800',
-            'suspended': 'bg-red-100 text-red-800'
+    getStatusDisplayName(status) {
+        const statusNames = {
+            'active': '🟢 Active',
+            'inactive': '⚪ Inactive',
+            'suspended': '🔴 Suspended'
         };
-        return classes[status] || 'bg-gray-100 text-gray-800';
+        return statusNames[status] || status;
     }
 
     formatDate(dateString) {
@@ -706,6 +823,11 @@ class AdminUsers {
         } catch {
             return dateString;
         }
+    }
+
+    truncateText(text, maxLength) {
+        if (!text || text.length <= maxLength) return text;
+        return text.substring(0, maxLength) + '...';
     }
 
     escapeHtml(text) {
@@ -731,9 +853,9 @@ class AdminUsers {
         
         toast.className = `${bgColor} text-white px-6 py-3 rounded-lg shadow-lg flex items-center gap-2 transform translate-x-full transition-transform duration-300`;
         toast.innerHTML = `
-            <span class="text-lg">${type === 'success' ? '&#9989;' : type === 'error' ? '&#10060;' : '&#8505;'}</span>
+            <span class="text-lg">${type === 'success' ? '✅' : type === 'error' ? '❌' : 'ℹ️'}</span>
             <span>${this.escapeHtml(message)}</span>
-            <button onclick="this.parentElement.remove()" class="ml-2 text-white hover:text-gray-200">&times;</button>
+            <button onclick="this.parentElement.remove()" class="ml-2 text-white hover:text-gray-200 transition-colors duration-200">&times;</button>
         `;
 
         container.appendChild(toast);
@@ -768,7 +890,7 @@ class AdminUsers {
             
             // Reload users on the previous page
             setTimeout(() => {
-                this.reloadUsers({ keepPage: true });
+                this.loadUsers();
             }, 500);
         }
     }
@@ -777,7 +899,7 @@ class AdminUsers {
     restoreDeletedRow(row, deleteBtn, userId) {
         // Re-enable delete button
         deleteBtn.disabled = false;
-        deleteBtn.textContent = 'Delete';
+        deleteBtn.innerHTML = '<span>🗑️</span><span>Delete</span>';
         deleteBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         
         // Restore row to DOM

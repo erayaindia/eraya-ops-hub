@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Logout</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white p-8">
+    <div class="max-w-md mx-auto space-y-6">
+        <h1 class="text-2xl font-bold">Debug Logout Function</h1>
+        
+        <div class="space-y-4">
+            <button onclick="testLogout()" class="w-full bg-red-600 hover:bg-red-700 px-4 py-2 rounded">
+                Test Logout Function
+            </button>
+            
+            <button onclick="testFetch()" class="w-full bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded">
+                Test Fetch API
+            </button>
+            
+            <button onclick="checkConsole()" class="w-full bg-green-600 hover:bg-green-700 px-4 py-2 rounded">
+                Check Console
+            </button>
+        </div>
+        
+        <div id="output" class="bg-gray-800 p-4 rounded min-h-[100px]">
+            <p class="text-gray-400">Output will appear here...</p>
+        </div>
+    </div>
+
+    <script>
+        function log(message) {
+            const output = document.getElementById('output');
+            output.innerHTML += `<p class="text-green-400">${new Date().toLocaleTimeString()}: ${message}</p>`;
+            console.log(message);
+        }
+        
+        function testLogout() {
+            log('Testing logout function...');
+            try {
+                if (typeof logout === 'function') {
+                    log('✅ logout function exists');
+                    logout();
+                } else {
+                    log('❌ logout function NOT found');
+                }
+            } catch (error) {
+                log(`❌ Error calling logout: ${error.message}`);
+            }
+        }
+        
+        async function testFetch() {
+            log('Testing fetch API...');
+            try {
+                const response = await fetch('/api/auth/logout', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                log(`✅ Fetch response: ${response.status} ${response.statusText}`);
+                
+                const data = await response.json();
+                log(`✅ Response data: ${JSON.stringify(data)}`);
+            } catch (error) {
+                log(`❌ Fetch error: ${error.message}`);
+            }
+        }
+        
+        function checkConsole() {
+            log('Checking console for errors...');
+            log('Open browser console (F12) to see detailed logs');
+        }
+        
+        // Check if logout function is available
+        window.addEventListener('load', function() {
+            log('Page loaded');
+            if (typeof logout === 'function') {
+                log('✅ logout function is available');
+            } else {
+                log('❌ logout function is NOT available');
+            }
+        });
+    </script>
+</body>
+</html>

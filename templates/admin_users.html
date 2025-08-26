@@ -1,162 +1,240 @@
 {% extends "layout_base.html" %}
 
 {% block content %}
-<section class="glass p-6">
-    <!-- Header -->
-    <div class="flex justify-between items-center mb-6">
-        <div>
-            <h1 class="text-3xl font-bold">User Management</h1>
-            <p class="text-white/80 mt-2">Manage system users, roles, and permissions</p>
+<section class="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 p-6">
+    <!-- Enhanced Header with better visual hierarchy -->
+    <div class="mb-8">
+        <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+            <div class="space-y-2">
+                <h1 class="text-4xl lg:text-5xl font-bold bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                    User Management
+                </h1>
+                <p class="text-lg text-slate-300 max-w-2xl">
+                    Manage system users, roles, and permissions with advanced controls and real-time updates
+                </p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button id="addUserBtn" class="group relative inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    <span class="text-xl">➕</span>
+                    <span>Add User</span>
+                    <div class="absolute inset-0 bg-white/20 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+                </button>
+            </div>
         </div>
-        <button id="addUserBtn" class="btn btn-primary flex items-center gap-2">
-            <span>➕</span>
-            Add User
-        </button>
     </div>
 
-    <div class="grid gap-6">
-        <!-- User Statistics -->
-        <div class="glass p-5">
-            <h2 class="text-xl font-semibold mb-4">User Statistics</h2>
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div class="bg-slate-800/50 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-blue-400" id="totalUsers">0</div>
-                    <div class="text-sm text-white/60">Total Users</div>
+    <div class="space-y-8">
+        <!-- Enhanced User Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <div class="group relative overflow-hidden bg-gradient-to-br from-blue-600/20 to-blue-800/20 backdrop-blur-sm border border-blue-500/30 rounded-2xl p-6 hover:from-blue-600/30 hover:to-blue-800/30 transition-all duration-300 hover:scale-105">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-blue-300 mb-1">Total Users</p>
+                        <p class="text-3xl font-bold text-blue-100" id="totalUsers">0</p>
+                    </div>
+                    <div class="text-4xl text-blue-400/60 group-hover:text-blue-400 transition-colors duration-300">👥</div>
                 </div>
-                <div class="bg-slate-800/50 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-green-400" id="activeUsers">0</div>
-                    <div class="text-sm text-white/60">Active Users</div>
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-400 to-blue-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+            </div>
+
+            <div class="group relative overflow-hidden bg-gradient-to-br from-green-600/20 to-green-800/20 backdrop-blur-sm border border-green-500/30 rounded-2xl p-6 hover:from-green-600/30 hover:to-green-800/30 transition-all duration-300 hover:scale-105">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-green-300 mb-1">Active Users</p>
+                        <p class="text-3xl font-bold text-green-100" id="activeUsers">0</p>
+                    </div>
+                    <div class="text-4xl text-green-400/60 group-hover:text-green-400 transition-colors duration-300">✅</div>
                 </div>
-                <div class="bg-slate-800/50 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-purple-400" id="adminUsers">0</div>
-                    <div class="text-sm text-white/60">Admins</div>
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-green-400 to-green-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+            </div>
+
+            <div class="group relative overflow-hidden bg-gradient-to-br from-purple-600/20 to-purple-800/20 backdrop-blur-sm border border-purple-500/30 rounded-2xl p-6 hover:from-purple-600/30 hover:to-purple-800/30 transition-all duration-300 hover:scale-105">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-purple-300 mb-1">Administrators</p>
+                        <p class="text-3xl font-bold text-purple-100" id="adminUsers">0</p>
+                    </div>
+                    <div class="text-4xl text-purple-400/60 group-hover:text-purple-400 transition-colors duration-300">👑</div>
                 </div>
-                <div class="bg-slate-800/50 p-4 rounded-lg text-center">
-                    <div class="text-2xl font-bold text-orange-400" id="recentLogins">0</div>
-                    <div class="text-sm text-white/60">Recent Logins</div>
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-purple-400 to-purple-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
+            </div>
+
+            <div class="group relative overflow-hidden bg-gradient-to-br from-orange-600/20 to-orange-800/20 backdrop-blur-sm border border-orange-500/30 rounded-2xl p-6 hover:from-orange-600/30 hover:to-orange-800/30 transition-all duration-300 hover:scale-105">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium text-orange-300 mb-1">Recent Logins</p>
+                        <p class="text-3xl font-bold text-orange-100" id="recentLogins">0</p>
+                    </div>
+                    <div class="text-4xl text-orange-400/60 group-hover:text-orange-400 transition-colors duration-300">🕒</div>
                 </div>
+                <div class="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-orange-400 to-orange-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
             </div>
         </div>
 
-        <!-- Filters and Controls -->
-        <div class="glass p-5">
-            <h2 class="text-xl font-semibold mb-4">Search & Filters</h2>
+        <!-- Enhanced Search & Filters Section -->
+        <div class="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm border border-slate-600/30 rounded-2xl p-6">
+            <div class="flex items-center gap-3 mb-6">
+                <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                    <span class="text-white text-sm font-bold">🔍</span>
+                </div>
+                <h2 class="text-xl font-semibold text-slate-200">Search & Filters</h2>
+            </div>
+            
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                <!-- Search -->
-                <div class="lg:col-span-2">
-                    <label class="block text-sm font-medium mb-2">Search</label>
-                    <input type="text" id="searchInput" placeholder="Search by name, email, phone..." 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <!-- Enhanced Search Input -->
+                <div class="lg:col-span-2 group">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Search Users</label>
+                    <div class="relative">
+                        <input type="text" id="searchInput" placeholder="Search by name, email, phone..." 
+                               class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 pl-12 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
+                        <div class="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 group-focus-within:text-blue-400 transition-colors duration-200">
+                            🔍
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Role Filter -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Role</label>
-                    <select id="roleFilter" class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <!-- Enhanced Role Filter -->
+                <div class="group">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Role</label>
+                    <select id="roleFilter" class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer">
                         <option value="all">All Roles</option>
-                        <option value="owner">Owner</option>
-                        <option value="admin">Admin</option>
-                        <option value="manager">Manager</option>
-                        <option value="employee">Employee</option>
-                        <option value="packer">Packer</option>
+                        <option value="owner">👑 Owner</option>
+                        <option value="admin">⚡ Admin</option>
+                        <option value="manager">👔 Manager</option>
+                        <option value="employee">👷 Employee</option>
+                        <option value="packer">📦 Packer</option>
                     </select>
                 </div>
 
-                <!-- Status Filter -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Status</label>
-                    <select id="statusFilter" class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <!-- Enhanced Status Filter -->
+                <div class="group">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Status</label>
+                    <select id="statusFilter" class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer">
                         <option value="all">All Status</option>
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="suspended">Suspended</option>
+                        <option value="active">🟢 Active</option>
+                        <option value="inactive">⚪ Inactive</option>
+                        <option value="suspended">🔴 Suspended</option>
                     </select>
                 </div>
 
-                <!-- Sort -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Sort By</label>
-                    <select id="sortSelect" class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="created_at">Date Created</option>
-                        <option value="name">Name</option>
-                        <option value="email">Email</option>
-                        <option value="role">Role</option>
-                        <option value="status">Status</option>
-                        <option value="last_login">Last Login</option>
+                <!-- Enhanced Sort -->
+                <div class="group">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Sort By</label>
+                    <select id="sortSelect" class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer">
+                        <option value="created_at">📅 Date Created</option>
+                        <option value="name">👤 Name</option>
+                        <option value="email">📧 Email</option>
+                        <option value="role">🎭 Role</option>
+                        <option value="status">📊 Status</option>
+                        <option value="last_login">🕒 Last Login</option>
                     </select>
                 </div>
 
-                <!-- Page Size -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Per Page</label>
-                    <select id="limitSelect" class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="10">10</option>
-                        <option value="25">25</option>
-                        <option value="50">50</option>
-                        <option value="100">100</option>
+                <!-- Enhanced Page Size -->
+                <div class="group">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Per Page</label>
+                    <select id="limitSelect" class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer">
+                        <option value="10">10 per page</option>
+                        <option value="25">25 per page</option>
+                        <option value="50">50 per page</option>
+                        <option value="100">100 per page</option>
                     </select>
                 </div>
             </div>
         </div>
 
-        <!-- Users Table -->
-        <div class="glass p-5">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-semibold">Users</h2>
-                <button id="refreshBtn" class="btn btn-secondary mr-2">🔄 Refresh</button>
-                <button id="forceRefreshBtn" class="btn btn-warning mr-2">🔄 Force Refresh</button>
-                <button id="hardRefreshBtn" class="btn btn-danger">🔄 Hard Refresh</button>
-                <span id="lastRefreshTime" class="text-sm text-gray-400 ml-4">Last refreshed: Never</span>
-                <span id="dataAge" class="text-sm text-orange-400 ml-4 hidden">⚠️ Data may be stale</span>
-            </div>
-
-            <div class="overflow-auto">
-                <table class="w-full rounded-lg overflow-hidden">
-                    <thead class="bg-slate-900/80">
-                        <tr>
-                            <th class="text-left p-3 border-b border-white/10">Name</th>
-                            <th class="text-left p-3 border-b border-white/10">Email</th>
-                            <th class="text-left p-3 border-b border-white/10">Role</th>
-                            <th class="text-left p-3 border-b border-white/10">Status</th>
-                            <th class="text-left p-3 border-b border-white/10">Phone</th>
-                            <th class="text-left p-3 border-b border-white/10">City</th>
-                            <th class="text-left p-3 border-b border-white/10">Joined</th>
-                            <th class="text-left p-3 border-b border-white/10">Last Login</th>
-                            <th class="text-left p-3 border-b border-white/10">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="usersTableBody" class="bg-slate-900/20">
-                        <!-- Users will be loaded here -->
-                    </tbody>
-                </table>
-
-                <!-- Loading state -->
-                <div id="loadingState" class="flex items-center justify-center py-8 text-white">
-                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
-                    <span class="ml-2">Loading users...</span>
+        <!-- Enhanced Users Table Section -->
+        <div class="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm border border-slate-600/30 rounded-2xl p-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg flex items-center justify-center">
+                        <span class="text-white text-sm font-bold">👥</span>
+                    </div>
+                    <h2 class="text-xl font-semibold text-slate-200">Users</h2>
                 </div>
-
-                <!-- Empty state -->
-                <div id="emptyState" class="hidden text-center py-8 text-white/60">
-                    <div class="text-4xl mb-2">👥</div>
-                    <p>No users found</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pagination -->
-        <div id="paginationContainer" class="glass p-4">
-            <div class="flex items-center justify-between">
-                <div class="text-sm text-white/80">
-                    Showing <span id="resultsInfo">0-0 of 0</span> users
-                </div>
-                <div class="flex items-center gap-2">
-                    <button id="prevBtn" class="btn btn-secondary disabled:opacity-50 disabled:cursor-not-allowed">
-                        Previous
+                
+                <div class="flex items-center gap-3">
+                    <button id="refreshBtn" class="group inline-flex items-center gap-2 px-4 py-2 bg-slate-700/80 hover:bg-slate-600/80 text-slate-200 rounded-lg transition-all duration-200 hover:scale-105">
+                        <span class="group-hover:rotate-180 transition-transform duration-300">🔄</span>
+                        <span>Refresh</span>
                     </button>
-                    <span id="pageInfo" class="px-3 py-2 text-sm text-white/80">Page 1 of 1</span>
-                    <button id="nextBtn" class="btn btn-secondary disabled:opacity-50 disabled:cursor-not-allowed">
-                        Next
+                    <button id="forceRefreshBtn" class="group inline-flex items-center gap-2 px-4 py-2 bg-orange-600/80 hover:bg-orange-500/80 text-white rounded-lg transition-all duration-200 hover:scale-105">
+                        <span class="group-hover:rotate-180 transition-transform duration-300">🔄</span>
+                        <span>Force Refresh</span>
+                    </button>
+                    <button id="hardRefreshBtn" class="group inline-flex items-center gap-2 px-4 py-2 bg-red-600/80 hover:bg-red-500/80 text-white rounded-lg transition-all duration-200 hover:scale-105">
+                        <span class="group-hover:rotate-180 transition-transform duration-300">🔄</span>
+                        <span>Hard Refresh</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex items-center gap-4 mb-4 text-sm">
+                <span id="lastRefreshTime" class="text-slate-400">Last refreshed: Never</span>
+                <span id="dataAge" class="hidden text-orange-400">⚠️ Data may be stale</span>
+            </div>
+
+            <div class="overflow-hidden rounded-xl border border-slate-600/30">
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gradient-to-r from-slate-900/80 to-slate-800/80">
+                            <tr>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">👤 Name</th>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">📧 Email</th>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">🎭 Role</th>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">📊 Status</th>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">📱 Phone</th>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">🏙️ City</th>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">📅 Joined</th>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">🕒 Last Login</th>
+                                <th class="text-left p-4 text-sm font-semibold text-slate-300 border-b border-slate-600/30">⚡ Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="usersTableBody" class="bg-slate-900/20">
+                            <!-- Users will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Enhanced Loading State -->
+                <div id="loadingState" class="hidden flex items-center justify-center py-12">
+                    <div class="text-center">
+                        <div class="inline-flex items-center gap-3">
+                            <div class="animate-spin rounded-full h-8 w-8 border-4 border-blue-500 border-t-transparent"></div>
+                            <span class="text-slate-300 text-lg">Loading users...</span>
+                        </div>
+                        <p class="text-slate-400 mt-2">Please wait while we fetch the latest data</p>
+                    </div>
+                </div>
+
+                <!-- Enhanced Empty State -->
+                <div id="emptyState" class="hidden text-center py-16">
+                    <div class="text-6xl mb-4">👥</div>
+                    <h3 class="text-xl font-semibold text-slate-200 mb-2">No users found</h3>
+                    <p class="text-slate-400 mb-6">Try adjusting your search criteria or filters</p>
+                    <button id="addUserBtnEmpty" class="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105">
+                        <span>➕</span>
+                        <span>Add Your First User</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Pagination -->
+        <div id="paginationContainer" class="bg-gradient-to-r from-slate-800/50 to-slate-700/50 backdrop-blur-sm border border-slate-600/30 rounded-2xl p-6">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+                <div class="text-sm text-slate-300">
+                    Showing <span id="resultsInfo" class="font-semibold text-blue-400">0-0 of 0</span> users
+                </div>
+                <div class="flex items-center gap-3">
+                    <button id="prevBtn" class="group inline-flex items-center gap-2 px-4 py-2 bg-slate-700/80 hover:bg-slate-600/80 text-slate-200 rounded-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                        <span class="group-hover:-translate-x-1 transition-transform duration-200">←</span>
+                        <span>Previous</span>
+                    </button>
+                    <span id="pageInfo" class="px-4 py-2 text-sm text-slate-300 bg-slate-800/50 rounded-lg">Page 1 of 1</span>
+                    <button id="nextBtn" class="group inline-flex items-center gap-2 px-4 py-2 bg-slate-700/80 hover:bg-slate-600/80 text-slate-200 rounded-lg transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                        <span>Next</span>
+                        <span class="group-hover:translate-x-1 transition-transform duration-200">→</span>
                     </button>
                 </div>
             </div>
@@ -164,163 +242,309 @@
     </div>
 </section>
 
-<!-- Add/Edit User Modal -->
-<div id="userModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="glass p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
-        <div class="flex justify-between items-center mb-4">
-            <h2 id="modalTitle" class="text-xl font-bold">Add User</h2>
-            <button id="closeModalBtn" class="text-white/60 hover:text-white text-2xl">×</button>
+<!-- Enhanced Add/Edit User Modal -->
+<div id="userModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="glass max-w-2xl w-full max-h-[90vh] overflow-y-auto rounded-2xl border border-slate-600/30">
+        <div class="sticky top-0 bg-gradient-to-r from-slate-800/90 to-slate-700/90 backdrop-blur-sm border-b border-slate-600/30 p-6 rounded-t-2xl">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg flex items-center justify-center">
+                        <span class="text-white text-sm font-bold" id="modalIcon">➕</span>
+                    </div>
+                    <h2 id="modalTitle" class="text-2xl font-bold text-slate-200">Add User</h2>
+                </div>
+                <button id="closeModalBtn" class="text-slate-400 hover:text-white text-3xl transition-colors duration-200 hover:scale-110">×</button>
+            </div>
         </div>
 
-        <form id="userForm">
+        <form id="userForm" class="p-6 space-y-6">
             <input type="hidden" id="userId" name="user_id">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
 
-            <div class="grid grid-cols-1 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <!-- Name -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Name *</label>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Full Name *</label>
                     <input type="text" id="userName" name="name" required 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                           placeholder="Enter full name">
                 </div>
 
                 <!-- Email -->
-                <div>
-                    <label class="block text-sm font-medium mb-2">Email *</label>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Email Address *</label>
                     <input type="email" id="userEmail" name="email" required 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <div id="emailError" class="hidden text-red-400 text-sm mt-1"></div>
+                           class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                           placeholder="user@example.com">
+                    <div id="emailError" class="hidden text-red-400 text-sm mt-2"></div>
                 </div>
 
                 <!-- Password -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">
-                        Password <span id="passwordRequired">*</span>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">
+                        Password <span id="passwordRequired" class="text-red-400">*</span>
                     </label>
                     <input type="password" id="userPassword" name="password" 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <div id="passwordNote" class="hidden text-white/60 text-sm mt-1">Leave empty to keep current password</div>
+                           class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                           placeholder="Enter password">
+                    <div id="passwordNote" class="hidden text-slate-400 text-sm mt-2">Leave empty to keep current password</div>
                 </div>
 
                 <!-- Confirm Password -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">
-                        Confirm Password <span id="confirmRequired">*</span>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">
+                        Confirm Password <span id="confirmRequired" class="text-red-400">*</span>
                     </label>
                     <input type="password" id="userPasswordConfirm" name="password_confirm" 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                    <div id="passwordError" class="hidden text-red-400 text-sm mt-1"></div>
+                           class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                           placeholder="Confirm password">
+                    <div id="passwordError" class="hidden text-red-400 text-sm mt-2"></div>
                 </div>
 
                 <!-- Role -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">Role *</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Role *</label>
                     <select id="userRole" name="role" required 
-                            class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="employee">Employee</option>
-                        <option value="packer">Packer</option>
-                        <option value="manager">Manager</option>
-                        <option value="admin">Admin</option>
-                        <option value="owner">Owner</option>
+                            class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer">
+                        <option value="employee">👷 Employee</option>
+                        <option value="packer">📦 Packer</option>
+                        <option value="manager">👔 Manager</option>
+                        <option value="admin">⚡ Admin</option>
+                        <option value="owner">👑 Owner</option>
                     </select>
                 </div>
 
                 <!-- Status -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">Status *</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Status *</label>
                     <select id="userStatus" name="status" required 
-                            class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="suspended">Suspended</option>
+                            class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 cursor-pointer">
+                        <option value="active">🟢 Active</option>
+                        <option value="inactive">⚪ Inactive</option>
+                        <option value="suspended">🔴 Suspended</option>
                     </select>
                 </div>
 
                 <!-- Phone -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">Phone</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Phone Number</label>
                     <input type="tel" id="userPhone" name="phone" 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                           placeholder="+1 (555) 123-4567">
                 </div>
 
                 <!-- City -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">City</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">City</label>
                     <input type="text" id="userCity" name="city" 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                           placeholder="Enter city name">
                 </div>
 
                 <!-- State -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">State</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">State/Province</label>
                     <input type="text" id="userState" name="state" 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white placeholder-white/50 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200"
+                           placeholder="Enter state or province">
                 </div>
 
                 <!-- Joining Date -->
                 <div>
-                    <label class="block text-sm font-medium mb-2">Joining Date</label>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Joining Date</label>
                     <input type="date" id="userJoiningDate" name="joining_date" 
-                           class="w-full rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                           class="w-full rounded-xl bg-slate-900/80 border border-slate-600/50 px-4 py-3 text-slate-100 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200">
                 </div>
             </div>
 
-            <div class="flex gap-3 mt-6 pt-4 border-t border-white/10">
-                <button type="submit" id="saveBtn" class="btn btn-primary flex-1 disabled:opacity-50 disabled:cursor-not-allowed">
-                    Save User
+            <div class="flex gap-4 pt-6 border-t border-slate-600/30">
+                <button type="submit" id="saveBtn" class="flex-1 group inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100">
+                    <span class="group-hover:scale-110 transition-transform duration-200">💾</span>
+                    <span>Save User</span>
                 </button>
-                <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="cancelBtn" class="px-6 py-3 bg-slate-700/80 hover:bg-slate-600/80 text-slate-200 font-semibold rounded-xl transition-all duration-200 hover:scale-105">Cancel</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="hidden fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-    <div class="glass p-6 max-w-md w-full">
-        <div class="flex items-center mb-4">
-            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-500/20">
-                <span class="text-red-400 text-xl">⚠️</span>
+<!-- Enhanced Delete Confirmation Modal -->
+<div id="deleteModal" class="hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div class="glass max-w-md w-full rounded-2xl border border-red-500/30">
+        <div class="p-6 text-center">
+            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-16 w-16 rounded-full bg-red-500/20 mb-4">
+                <span class="text-red-400 text-3xl">⚠️</span>
             </div>
-        </div>
-        <div class="text-center">
-            <h3 class="text-lg font-medium mb-2">Delete User</h3>
-            <p class="text-sm text-white/60 mb-4">
-                Are you sure you want to delete <span id="deleteUserName" class="font-medium text-white"></span>? 
+            <h3 class="text-xl font-semibold text-slate-200 mb-2">Delete User</h3>
+            <p class="text-slate-400 mb-6">
+                Are you sure you want to delete <span id="deleteUserName" class="font-semibold text-red-400"></span>? 
                 This action cannot be undone.
             </p>
         </div>
-        <form id="deleteForm">
+        
+        <form id="deleteForm" class="p-6 pt-0">
             <input type="hidden" id="deleteUserId" name="user_id">
             <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
             
             <div class="flex gap-3">
-                <button type="submit" class="btn bg-red-600 hover:bg-red-700 text-white flex-1">
-                    Delete User
+                <button type="submit" class="flex-1 group inline-flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-xl transition-all duration-200 hover:scale-105">
+                    <span class="group-hover:scale-110 transition-transform duration-200">🗑️</span>
+                    <span>Delete User</span>
                 </button>
-                <button type="button" id="cancelDeleteBtn" class="btn btn-secondary">Cancel</button>
+                <button type="button" id="cancelDeleteBtn" class="px-6 py-3 bg-slate-700/80 hover:bg-slate-600/80 text-slate-200 font-semibold rounded-xl transition-all duration-200 hover:scale-105">Cancel</button>
             </div>
         </form>
     </div>
 </div>
 
-<!-- Toast Notifications -->
-<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-2"></div>
+<!-- Enhanced Toast Notifications -->
+<div id="toastContainer" class="fixed top-4 right-4 z-50 space-y-3"></div>
 
 <style>
-.role-owner { background: #7c3aed; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
-.role-admin { background: #dc2626; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
-.role-manager { background: #2563eb; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
-.role-employee { background: #16a34a; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
-.role-packer { background: #ea580c; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
+/* Enhanced Role Badges */
+.role-owner { 
+    background: linear-gradient(135deg, #7c3aed, #a855f7); 
+    color: white; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.3);
+}
+.role-admin { 
+    background: linear-gradient(135deg, #dc2626, #ef4444); 
+    color: white; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.3);
+}
+.role-manager { 
+    background: linear-gradient(135deg, #2563eb, #3b82f6); 
+    color: white; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+}
+.role-employee { 
+    background: linear-gradient(135deg, #16a34a, #22c55e); 
+    color: white; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+}
+.role-packer { 
+    background: linear-gradient(135deg, #ea580c, #f97316); 
+    color: white; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(234, 88, 12, 0.3);
+}
 
-.status-active { background: #10b981; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
-.status-inactive { background: #6b7280; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
-.status-suspended { background: #ef4444; color: white; padding: 2px 8px; border-radius: 6px; font-size: 11px; }
+/* Enhanced Status Badges */
+.status-active { 
+    background: linear-gradient(135deg, #10b981, #22c55e); 
+    color: white; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+.status-inactive { 
+    background: linear-gradient(135deg, #6b7280, #9ca3af); 
+    color: white; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(107, 114, 128, 0.3);
+}
+.status-suspended { 
+    background: linear-gradient(135deg, #ef4444, #f87171); 
+    color: white; 
+    padding: 6px 12px; 
+    border-radius: 20px; 
+    font-size: 12px; 
+    font-weight: 600;
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+}
+
+/* Enhanced Table Row Hover Effects */
+#usersTableBody tr {
+    transition: all 0.2s ease;
+}
+
+#usersTableBody tr:hover {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(147, 51, 234, 0.1));
+    transform: translateX(4px);
+}
+
+/* Enhanced Button Hover Effects */
+.btn {
+    transition: all 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* Glass Effect Enhancement */
+.glass {
+    background: rgba(30, 41, 59, 0.8);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Responsive Design Improvements */
+@media (max-width: 768px) {
+    .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .grid-cols-1.md\\:grid-cols-2.lg\\:grid-cols-6 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .lg\\:col-span-2 {
+        grid-column: span 1;
+    }
+}
+
+/* Smooth Animations */
+* {
+    transition: all 0.2s ease;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(30, 41, 59, 0.5);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #2563eb, #7c3aed);
+}
 </style>
 
 <script src="/static/js/admin_users.js"></script>
-
-
 
 {% endblock %}

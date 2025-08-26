@@ -1,4 +1,4 @@
-from __future__ import annotations
+-ofrom __future__ import annotations
 from datetime import datetime
 from typing import List, Optional
 from sqlalchemy import Column, Integer, String, DateTime, Float, Boolean, ForeignKey, JSON, Enum, Text

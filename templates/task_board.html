@@ -1,0 +1,276 @@
+{% extends "layout_base.html" %}
+{% block content %}
+
+<section class="glass p-6">
+  <h1 class="text-3xl font-bold">Task Board</h1>
+  <p class="text-white/80 mt-2">Kanban board for visual task management.</p>
+  
+  <div class="mt-6">
+    <!-- Board Controls -->
+    <div class="flex justify-between items-center mb-6">
+      <div class="flex gap-3">
+        <button id="addTask" class="btn btn-primary">➕ Add Task</button>
+        <button id="filterTasks" class="btn btn-secondary">🔍 Filter</button>
+        <button id="refreshBoard" class="btn btn-secondary">🔄 Refresh</button>
+      </div>
+      <div class="flex items-center gap-3">
+        <select id="viewMode" class="rounded-xl bg-slate-900/60 border border-white/10 px-3 py-2 text-white">
+          <option value="kanban">Kanban View</option>
+          <option value="list">List View</option>
+        </select>
+        <button id="exportBoard" class="btn btn-secondary">📊 Export</button>
+      </div>
+    </div>
+    
+    <!-- Kanban Board -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-6" id="kanbanBoard">
+      <!-- To Do Column -->
+      <div class="kanban-col" data-status="pending">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-white">📋 To Do</h3>
+          <span class="bg-slate-700 text-white text-xs px-2 py-1 rounded-full" id="pending-count">0</span>
+        </div>
+        <div class="space-y-3" id="pending-tasks">
+          <!-- Tasks will be loaded here -->
+        </div>
+        <button class="w-full p-3 border-2 border-dashed border-white/20 rounded-lg text-white/60 hover:border-white/40 hover:text-white/80 transition-colors">
+          + Add Task
+        </button>
+      </div>
+      
+      <!-- In Progress Column -->
+      <div class="kanban-col" data-status="in_progress">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-white">⚡ In Progress</h3>
+          <span class="bg-blue-600 text-white text-xs px-2 py-1 rounded-full" id="in-progress-count">0</span>
+        </div>
+        <div class="space-y-3" id="in-progress-tasks">
+          <!-- Tasks will be loaded here -->
+        </div>
+        <button class="w-full p-3 border-2 border-dashed border-white/20 rounded-lg text-white/60 hover:border-white/40 hover:text-white/80 transition-colors">
+          + Add Task
+        </button>
+      </div>
+      
+      <!-- Review Column -->
+      <div class="kanban-col" data-status="review">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-white">👀 Review</h3>
+          <span class="bg-yellow-600 text-white text-xs px-2 py-1 rounded-full" id="review-count">0</span>
+        </div>
+        <div class="space-y-3" id="review-tasks">
+          <!-- Tasks will be loaded here -->
+        </div>
+        <button class="w-full p-3 border-2 border-dashed border-white/20 rounded-lg text-white/60 hover:border-white/40 hover:text-white/80 transition-colors">
+          + Add Task
+        </button>
+      </div>
+      
+      <!-- Done Column -->
+      <div class="kanban-col" data-status="completed">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="text-lg font-semibold text-white">✅ Done</h3>
+          <span class="bg-green-600 text-white text-xs px-2 py-1 rounded-full" id="completed-count">0</span>
+        </div>
+        <div class="space-y-3" id="completed-tasks">
+          <!-- Tasks will be loaded here -->
+        </div>
+        <button class="w-full p-3 border-2 border-dashed border-white/20 rounded-lg text-white/60 hover:border-white/40 hover:text-white/80 transition-colors">
+          + Add Task
+        </button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Task Detail Modal -->
+<div id="taskModal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div class="bg-slate-900 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden shadow-2xl">
+    <div class="flex items-center justify-between p-6 border-b border-white/10">
+      <h2 id="modalTitle" class="text-xl font-bold">Task Details</h2>
+      <button onclick="closeTaskModal()" class="p-2 hover:bg-white/10 rounded-lg transition-colors">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+      </button>
+    </div>
+    
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+      <div id="taskDetails">
+        <!-- Task details will be loaded here -->
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize the board
+    loadTasks();
+    
+    // Event listeners
+    document.getElementById('refreshBoard').addEventListener('click', loadTasks);
+    document.getElementById('addTask').addEventListener('click', showAddTaskForm);
+    document.getElementById('viewMode').addEventListener('change', toggleViewMode);
+    
+    // Initialize drag and drop
+    initializeDragAndDrop();
+});
+
+async function loadTasks() {
+    try {
+        const response = await fetch('/api/tasks');
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayTasks(data.tasks || []);
+        } else {
+            console.error('Failed to load tasks:', data);
+        }
+    } catch (error) {
+        console.error('Error loading tasks:', error);
+        // Show placeholder tasks for demo
+        displayTasks(getPlaceholderTasks());
+    }
+}
+
+function displayTasks(tasks) {
+    // Clear all columns
+    ['pending', 'in_progress', 'review', 'completed'].forEach(status => {
+        const container = document.getElementById(`${status.replace('_', '-')}-tasks`);
+        container.innerHTML = '';
+        
+        // Update count
+        const countElement = document.getElementById(`${status.replace('_', '-')}-count`);
+        const count = tasks.filter(task => task.status === status).length;
+        countElement.textContent = count;
+    });
+    
+    // Add tasks to appropriate columns
+    tasks.forEach(task => {
+        addTaskToColumn(task);
+    });
+}
+
+function addTaskToColumn(task) {
+    const status = task.status.replace('_', '-');
+    const container = document.getElementById(`${status}-tasks`);
+    
+    const taskElement = createTaskElement(task);
+    container.appendChild(taskElement);
+}
+
+function createTaskElement(task) {
+    const div = document.createElement('div');
+    div.className = 'task-card p-4 cursor-move';
+    div.draggable = true;
+    div.dataset.taskId = task.id;
+    
+    const priorityColors = {
+        'low': 'border-blue-500',
+        'medium': 'border-yellow-500',
+        'high': 'border-orange-500',
+        'urgent': 'border-red-500'
+    };
+    
+    div.innerHTML = `
+        <div class="flex items-start justify-between mb-2">
+            <h4 class="font-semibold text-white text-sm">${task.title}</h4>
+            <span class="text-xs px-2 py-1 rounded-full ${priorityColors[task.priority] || 'border-gray-500'} border">${task.priority}</span>
+        </div>
+        <p class="text-white/70 text-xs mb-3 line-clamp-2">${task.description}</p>
+        <div class="flex items-center justify-between text-xs text-white/60">
+            <span>👤 ${task.assigned_to}</span>
+            <span>⏰ ${task.estimated_hours || 0}h</span>
+        </div>
+        ${task.due_date ? `<div class="mt-2 text-xs text-white/60">📅 ${new Date(task.due_date).toLocaleDateString()}</div>` : ''}
+    `;
+    
+    // Add click event to show details
+    div.addEventListener('click', () => showTaskDetails(task.id));
+    
+    return div;
+}
+
+function getPlaceholderTasks() {
+    return [
+        {
+            id: '1',
+            title: 'Sample Task 1',
+            description: 'This is a sample task description',
+            status: 'pending',
+            priority: 'medium',
+            assigned_to: 'John Doe',
+            estimated_hours: 4,
+            due_date: '2024-01-20'
+        },
+        {
+            id: '2',
+            title: 'Sample Task 2',
+            description: 'Another sample task for demonstration',
+            status: 'in_progress',
+            priority: 'high',
+            assigned_to: 'Jane Smith',
+            estimated_hours: 6,
+            due_date: '2024-01-18'
+        }
+    ];
+}
+
+function initializeDragAndDrop() {
+    const columns = document.querySelectorAll('.kanban-col');
+    
+    columns.forEach(column => {
+        column.addEventListener('dragover', handleDragOver);
+        column.addEventListener('drop', handleDrop);
+    });
+}
+
+function handleDragOver(e) {
+    e.preventDefault();
+    e.currentTarget.classList.add('drag-over');
+}
+
+function handleDrop(e) {
+    e.preventDefault();
+    e.currentTarget.classList.remove('drag-over');
+    
+    const taskId = e.dataTransfer.getData('text/plain');
+    const newStatus = e.currentTarget.dataset.status;
+    
+    // Update task status
+    updateTaskStatus(taskId, newStatus);
+}
+
+function updateTaskStatus(taskId, newStatus) {
+    // TODO: Implement API call to update task status
+    console.log(`Moving task ${taskId} to ${newStatus}`);
+    
+    // Refresh the board
+    loadTasks();
+}
+
+function showTaskDetails(taskId) {
+    // TODO: Implement task details modal
+    console.log(`Showing details for task ${taskId}`);
+}
+
+function showAddTaskForm() {
+    // TODO: Implement add task form
+    alert('Add task functionality coming soon!');
+}
+
+function toggleViewMode() {
+    const viewMode = document.getElementById('viewMode').value;
+    if (viewMode === 'list') {
+        // TODO: Implement list view
+        alert('List view coming soon!');
+    }
+}
+
+function closeTaskModal() {
+    document.getElementById('taskModal').classList.add('hidden');
+}
+</script>
+
+{% endblock %}

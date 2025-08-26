@@ -19,6 +19,23 @@ def get_templates(request: Request) -> Jinja2Templates:
 
 def get_shopify_stats() -> Dict:
     """Get real-time Shopify statistics"""
+    # Check if Supabase client is available
+    if not supa.supabase:
+        print("⚠️ Supabase client not available - returning fallback stats")
+        return {
+            "orders_today": 0,
+            "orders_this_week": 0,
+            "pending_orders": 0,
+            "fulfilled_orders": 0,
+            "todays_revenue": "0.00",
+            "weeks_revenue": "0.00",
+            "total_revenue": "0.00",
+            "total_orders": 0,
+            "recent_orders": [],
+            "last_sync": "Never",
+            "error": "Supabase not configured"
+        }
+    
     try:
         now = datetime.utcnow()
         today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
@@ -89,6 +106,10 @@ def get_shopify_stats() -> Dict:
 
 def get_last_sync_time() -> str:
     """Get the last sync time"""
+    # Check if Supabase client is available
+    if not supa.supabase:
+        return "Never"
+    
     try:
         response = supa.supabase.table("shopify_sync_status")\
             .select("last_sync")\

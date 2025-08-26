@@ -7,8 +7,7 @@
             <div>
                 <div class="sidebar-title">Eraya Ops</div>
                 <div class="sidebar-subtitle">
-                    Admin Access 
-                    <span class="access-badge">FULL ACCESS</span>
+                    Admin Access
                 </div>
             </div>
         </div>
@@ -39,10 +38,11 @@
             <div class="sidebar-icon">🏠</div>
             <div class="sidebar-text">Home</div>
         </a>
-        <div class="sidebar-item" onclick="logout()" style="cursor: pointer;">
+        <div class="sidebar-item" onclick="handleLogoutClick()" style="cursor: pointer;" title="Logout" id="logoutBtn">
             <div class="sidebar-icon">🚪</div>
             <div class="sidebar-text">Logout</div>
         </div>
+
     </div>
 </div>
 
@@ -53,3 +53,136 @@
 
 <!-- Mobile Overlay -->
 <div id="sidebarOverlay" class="fixed inset-0 bg-black/50 z-30 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+<!-- Logout Function Script -->
+<script>
+// Handle logout click with error checking
+function handleLogoutClick() {
+    console.log('Logout button clicked');
+    
+    if (typeof logout === 'function') {
+        console.log('Calling logout function...');
+        logout();
+    } else {
+        console.error('Logout function not available, trying direct API call...');
+        // Fallback: direct API call
+        directLogout();
+    }
+}
+
+// Direct logout function as fallback
+async function directLogout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    try {
+        // Show loading state
+        if (logoutBtn) {
+            logoutBtn.style.opacity = '0.6';
+            logoutBtn.style.pointerEvents = 'none';
+            const iconElement = logoutBtn.querySelector('.sidebar-icon');
+            const textElement = logoutBtn.querySelector('.sidebar-text');
+            if (iconElement) iconElement.textContent = '⏳';
+            if (textElement) textElement.textContent = 'Logging out...';
+        }
+        
+        console.log('Making direct logout API call...');
+        
+        const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        console.log('Logout API response:', response.status, response.statusText);
+        
+        if (response.ok) {
+            // Clear any stored session data
+            localStorage.removeItem('session_id');
+            sessionStorage.clear();
+            
+            // Show success state briefly
+            if (logoutBtn) {
+                const iconElement = logoutBtn.querySelector('.sidebar-icon');
+                const textElement = logoutBtn.querySelector('.sidebar-text');
+                if (iconElement) iconElement.textContent = '✓';
+                if (textElement) textElement.textContent = 'Success!';
+            }
+            
+            console.log('Logout successful');
+            
+            // Redirect to login page after brief delay
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 500);
+        } else {
+            console.error('Logout failed');
+            window.location.href = '/login';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        window.location.href = '/login';
+    }
+}
+
+// Main logout function - ensure it's available
+async function logout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    try {
+        // Show loading state
+        if (logoutBtn) {
+            logoutBtn.style.opacity = '0.6';
+            logoutBtn.style.pointerEvents = 'none';
+            const iconElement = logoutBtn.querySelector('.sidebar-icon');
+            const textElement = logoutBtn.querySelector('.sidebar-text');
+            if (iconElement) iconElement.textContent = '⏳';
+            if (textElement) textElement.textContent = 'Logging out...';
+        }
+        
+        console.log('Logout function called, making API request...');
+        
+        const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        console.log('Logout API response:', response.status, response.statusText);
+        
+        if (response.ok) {
+            // Clear any stored session data
+            localStorage.removeItem('session_id');
+            sessionStorage.clear();
+            
+            // Show success state briefly
+            if (logoutBtn) {
+                const iconElement = logoutBtn.querySelector('.sidebar-icon');
+                const textElement = logoutBtn.querySelector('.sidebar-text');
+                if (iconElement) iconElement.textContent = '✓';
+                if (textElement) textElement.textContent = 'Success!';
+            }
+            
+            // Show logout message
+            console.log('Logout successful');
+            
+            // Redirect to login page after brief delay
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 500);
+        } else {
+            console.error('Logout failed');
+            // Still redirect to login page even if logout API fails
+            window.location.href = '/login';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        // Still redirect to login page even if there's an error
+        window.location.href = '/login';
+    }
+}
+
+// Test if logout function is available
+console.log('Logout function loaded, available:', typeof logout);
+</script>

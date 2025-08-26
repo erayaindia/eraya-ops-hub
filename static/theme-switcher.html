@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Theme Switcher - Eraya Ops</title>
+    <link rel="stylesheet" href="css/theme.css">
+    <link rel="stylesheet" href="css/app.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 2rem;
+            background: linear-gradient(135deg, var(--bg-primary), var(--bg-secondary));
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+        }
+        
+        .theme-section {
+            background: var(--bg-glass);
+            backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--border-primary);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .theme-section h2 {
+            color: var(--accent-primary);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+        
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+        
+        .color-item {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .color-item label {
+            font-weight: 600;
+            color: var(--text-primary);
+            font-size: 0.9rem;
+        }
+        
+        .color-item input[type="color"] {
+            width: 100%;
+            height: 50px;
+            border: 2px solid var(--border-primary);
+            border-radius: 8px;
+            cursor: pointer;
+            background: none;
+        }
+        
+        .color-item input[type="text"] {
+            padding: 0.5rem;
+            border: 1px solid var(--border-primary);
+            border-radius: 6px;
+            background: var(--bg-sidebar);
+            color: var(--text-primary);
+            font-family: monospace;
+        }
+        
+        .preset-themes {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .preset-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid var(--border-primary);
+            border-radius: 8px;
+            background: var(--bg-sidebar);
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            font-weight: 500;
+        }
+        
+        .preset-btn:hover {
+            background: var(--hover-bg);
+            border-color: var(--accent-primary);
+            transform: translateY(-2px);
+        }
+        
+        .preset-btn.active {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+        
+        .actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+        
+        .btn {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+        
+        .btn-primary {
+            background: var(--accent-primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-secondary);
+            transform: translateY(-2px);
+        }
+        
+        .btn-secondary {
+            background: var(--bg-sidebar);
+            color: var(--text-primary);
+            border: 2px solid var(--border-primary);
+        }
+        
+        .btn-secondary:hover {
+            background: var(--hover-bg);
+            border-color: var(--accent-primary);
+        }
+        
+        .preview {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-primary);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .preview h3 {
+            color: var(--accent-primary);
+            margin-bottom: 1rem;
+        }
+        
+        .preview-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+            padding: 0.5rem;
+            border-radius: 6px;
+        }
+        
+        .preview-item:hover {
+            background: var(--hover-bg);
+        }
+        
+        .preview-icon {
+            width: 2rem;
+            height: 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--accent-primary);
+            color: white;
+            border-radius: 6px;
+            font-size: 1.2rem;
+        }
+        
+        .preview-text {
+            color: var(--text-nav);
+        }
+        
+        .preview-text.active {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎨 Theme Switcher</h1>
+            <p>Customize the colors for your entire Eraya Ops application</p>
+        </div>
+        
+        <!-- Preset Themes -->
+        <div class="theme-section">
+            <h2>🚀 Quick Preset Themes</h2>
+            <div class="preset-themes">
+                <button class="preset-btn active" onclick="applyPreset('dark')">🌙 Dark Theme</button>
+                <button class="preset-btn" onclick="applyPreset('light')">☀️ Light Theme</button>
+                <button class="preset-btn" onclick="applyPreset('blue')">🔵 Blue Theme</button>
+                <button class="preset-btn" onclick="applyPreset('purple')">🟣 Purple Theme</button>
+                <button class="preset-btn" onclick="applyPreset('green')">🟢 Green Theme</button>
+                <button class="preset-btn" onclick="applyPreset('red')">🔴 Red Theme</button>
+            </div>
+        </div>
+        
+        <!-- Main Background Colors -->
+        <div class="theme-section">
+            <h2>🎭 Main Background Colors</h2>
+            <div class="color-grid">
+                <div class="color-item">
+                    <label for="bg-primary">Primary Background</label>
+                    <input type="color" id="bg-primary" value="#0f172a" onchange="updateTheme()">
+                    <input type="text" value="#0f172a" onchange="updateThemeFromText(this, 'bg-primary')">
+                </div>
+                <div class="color-item">
+                    <label for="bg-secondary">Secondary Background</label>
+                    <input type="color" id="bg-secondary" value="#1e1b4b" onchange="updateTheme()">
+                    <input type="text" value="#1e1b4b" onchange="updateThemeFromText(this, 'bg-secondary')">
+                </div>
+                <div class="color-item">
+                    <label for="bg-sidebar">Sidebar Background</label>
+                    <input type="color" id="bg-sidebar" value="#111827" onchange="updateTheme()">
+                    <input type="text" value="rgba(17, 24, 39, 0.7)" onchange="updateThemeFromText(this, 'bg-sidebar')">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Text Colors -->
+        <div class="theme-section">
+            <h2>📝 Text Colors</h2>
+            <div class="color-grid">
+                <div class="color-item">
+                    <label for="text-primary">Primary Text</label>
+                    <input type="color" id="text-primary" value="#ffffff" onchange="updateTheme()">
+                    <input type="text" value="#ffffff" onchange="updateThemeFromText(this, 'text-primary')">
+                </div>
+                <div class="color-item">
+                    <label for="text-secondary">Secondary Text</label>
+                    <input type="color" id="text-secondary" value="#ffffff" onchange="updateTheme()">
+                    <input type="text" value="rgba(255, 255, 255, 0.6)" onchange="updateThemeFromText(this, 'text-secondary')">
+                </div>
+                <div class="color-item">
+                    <label for="text-nav">Navigation Text</label>
+                    <input type="color" id="text-nav" value="#ffffff" onchange="updateTheme()">
+                    <input type="text" value="rgba(255, 255, 255, 0.7)" onchange="updateThemeFromText(this, 'text-nav')">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Accent Colors -->
+        <div class="theme-section">
+            <h2>✨ Accent Colors</h2>
+            <div class="color-grid">
+                <div class="color-item">
+                    <label for="accent-primary">Primary Accent</label>
+                    <input type="color" id="accent-primary" value="#a855f7" onchange="updateTheme()">
+                    <input type="text" value="#a855f7" onchange="updateThemeFromText(this, 'accent-primary')">
+                </div>
+                <div class="color-item">
+                    <label for="accent-secondary">Secondary Accent</label>
+                    <input type="color" id="accent-secondary" value="#3b82f6" onchange="updateTheme()">
+                    <input type="text" value="#3b82f6" onchange="updateThemeFromText(this, 'accent-secondary')">
+                </div>
+                <div class="color-item">
+                    <label for="accent-danger">Danger/Error</label>
+                    <input type="color" id="accent-danger" value="#ef4444" onchange="updateTheme()">
+                    <input type="text" value="#ef4444" onchange="updateThemeFromText(this, 'accent-danger')">
+                </div>
+            </div>
+        </div>
+        
+        <!-- Actions -->
+        <div class="actions">
+            <button class="btn btn-primary" onclick="saveTheme()">💾 Save Theme</button>
+            <button class="btn btn-secondary" onclick="resetTheme()">🔄 Reset to Default</button>
+            <button class="btn btn-secondary" onclick="exportTheme()">📤 Export Theme</button>
+        </div>
+        
+        <!-- Live Preview -->
+        <div class="theme-section">
+            <h2>👀 Live Preview</h2>
+            <div class="preview">
+                <h3>Sidebar Preview</h3>
+                <div class="preview-item">
+                    <div class="preview-icon">📊</div>
+                    <div class="preview-text active">Dashboard</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-icon">🧭</div>
+                    <div class="preview-text">Orders</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-icon">📦</div>
+                    <div class="preview-text">Packing Management</div>
+                </div>
+                <div class="preview-item">
+                    <div class="preview-icon">🎫</div>
+                    <div class="preview-text">Support Tickets</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load current theme values
+        function loadCurrentTheme() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            // Update color inputs
+            document.getElementById('bg-primary').value = hexToRgb(computedStyle.getPropertyValue('--bg-primary').trim());
+            document.getElementById('bg-secondary').value = hexToRgb(computedStyle.getPropertyValue('--bg-secondary').trim());
+            document.getElementById('text-primary').value = hexToRgb(computedStyle.getPropertyValue('--text-primary').trim());
+            document.getElementById('accent-primary').value = computedStyle.getPropertyValue('--accent-primary').trim();
+            document.getElementById('accent-secondary').value = computedStyle.getPropertyValue('--accent-secondary').trim();
+            document.getElementById('accent-danger').value = computedStyle.getPropertyValue('--accent-danger').trim();
+        }
+        
+        // Convert hex to rgb for color input
+        function hexToRgb(hex) {
+            if (hex.startsWith('rgba') || hex.startsWith('rgb')) {
+                // Extract hex from rgba/rgb
+                const match = hex.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+                if (match) {
+                    return rgbToHex(parseInt(match[1]), parseInt(match[2]), parseInt(match[3]));
+                }
+            }
+            return hex;
+        }
+        
+        // Convert rgb to hex
+        function rgbToHex(r, g, b) {
+            return "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
+        }
+        
+        // Update theme from color picker
+        function updateTheme() {
+            const root = document.documentElement;
+            
+            root.style.setProperty('--bg-primary', document.getElementById('bg-primary').value);
+            root.style.setProperty('--bg-secondary', document.getElementById('bg-secondary').value);
+            root.style.setProperty('--text-primary', document.getElementById('text-primary').value);
+            root.style.setProperty('--accent-primary', document.getElementById('accent-primary').value);
+            root.style.setProperty('--accent-secondary', document.getElementById('accent-secondary').value);
+            root.style.setProperty('--accent-danger', document.getElementById('accent-danger').value);
+            
+            // Update derived colors
+            updateDerivedColors();
+        }
+        
+        // Update theme from text input
+        function updateThemeFromText(input, property) {
+            const root = document.documentElement;
+            root.style.setProperty(`--${property}`, input.value);
+            updateDerivedColors();
+        }
+        
+        // Update derived colors
+        function updateDerivedColors() {
+            const root = document.documentElement;
+            const primary = getComputedStyle(root).getPropertyValue('--accent-primary').trim();
+            const danger = getComputedStyle(root).getPropertyValue('--accent-danger').trim();
+            
+            // Update derived colors
+            root.style.setProperty('--active-bg', `${primary}33`);
+            root.style.setProperty('--active-border', primary);
+            root.style.setProperty('--badge-bg', `${danger}33`);
+            root.style.setProperty('--badge-text', danger);
+        }
+        
+        // Apply preset themes
+        function applyPreset(theme) {
+            // Update active button
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            const root = document.documentElement;
+            
+            switch(theme) {
+                case 'light':
+                    root.style.setProperty('--bg-primary', '#ffffff');
+                    root.style.setProperty('--bg-secondary', '#f8fafc');
+                    root.style.setProperty('--bg-sidebar', 'rgba(248, 250, 252, 0.9)');
+                    root.style.setProperty('--text-primary', '#0f172a');
+                    root.style.setProperty('--text-secondary', '#475569');
+                    root.style.setProperty('--text-nav', '#64748b');
+                    break;
+                    
+                case 'blue':
+                    root.style.setProperty('--bg-primary', '#0f172a');
+                    root.style.setProperty('--bg-secondary', '#1e40af');
+                    root.style.setProperty('--accent-primary', '#3b82f6');
+                    root.style.setProperty('--accent-secondary', '#60a5fa');
+                    break;
+                    
+                case 'purple':
+                    root.style.setProperty('--bg-primary', '#0f172a');
+                    root.style.setProperty('--bg-secondary', '#581c87');
+                    root.style.setProperty('--accent-primary', '#a855f7');
+                    root.style.setProperty('--accent-secondary', '#c084fc');
+                    break;
+                    
+                case 'green':
+                    root.style.setProperty('--bg-primary', '#0f172a');
+                    root.style.setProperty('--bg-secondary', '#14532d');
+                    root.style.setProperty('--accent-primary', '#22c55e');
+                    root.style.setProperty('--accent-secondary', '#4ade80');
+                    break;
+                    
+                case 'red':
+                    root.style.setProperty('--bg-primary', '#0f172a');
+                    root.style.setProperty('--bg-secondary', '#7f1d1d');
+                    root.style.setProperty('--accent-primary', '#ef4444');
+                    root.style.setProperty('--accent-secondary', '#f87171');
+                    break;
+                    
+                default: // dark
+                    root.style.setProperty('--bg-primary', '#0f172a');
+                    root.style.setProperty('--bg-secondary', '#1e1b4b');
+                    root.style.setProperty('--bg-sidebar', 'rgba(17, 24, 39, 0.7)');
+                    root.style.setProperty('--text-primary', '#ffffff');
+                    root.style.setProperty('--text-secondary', 'rgba(255, 255, 255, 0.6)');
+                    root.style.setProperty('--text-nav', 'rgba(255, 255, 255, 0.7)');
+                    root.style.setProperty('--accent-primary', '#a855f7');
+                    root.style.setProperty('--accent-secondary', '#3b82f6');
+                    break;
+            }
+            
+            updateDerivedColors();
+            updateInputs();
+        }
+        
+        // Update input values
+        function updateInputs() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            document.getElementById('bg-primary').value = hexToRgb(computedStyle.getPropertyValue('--bg-primary').trim());
+            document.getElementById('bg-secondary').value = hexToRgb(computedStyle.getPropertyValue('--bg-secondary').trim());
+            document.getElementById('text-primary').value = hexToRgb(computedStyle.getPropertyValue('--text-primary').trim());
+            document.getElementById('accent-primary').value = computedStyle.getPropertyValue('--accent-primary').trim();
+            document.getElementById('accent-secondary').value = computedStyle.getPropertyValue('--accent-secondary').trim();
+            document.getElementById('accent-danger').value = computedStyle.getPropertyValue('--accent-danger').trim();
+        }
+        
+        // Save theme to localStorage
+        function saveTheme() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            const theme = {};
+            
+            // Get all CSS variables
+            for (let i = 0; i < computedStyle.length; i++) {
+                const prop = computedStyle[i];
+                if (prop.startsWith('--')) {
+                    theme[prop] = computedStyle.getPropertyValue(prop).trim();
+                }
+            }
+            
+            localStorage.setItem('eraya-theme', JSON.stringify(theme));
+            alert('Theme saved! Refresh your main app to see changes.');
+        }
+        
+        // Reset theme to default
+        function resetTheme() {
+            location.reload();
+        }
+        
+        // Export theme as CSS
+        function exportTheme() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            let css = ':root {\n';
+            
+            for (let i = 0; i < computedStyle.length; i++) {
+                const prop = computedStyle[i];
+                if (prop.startsWith('--')) {
+                    const value = computedStyle.getPropertyValue(prop).trim();
+                    css += `    ${prop}: ${value};\n`;
+                }
+            }
+            
+            css += '}';
+            
+            const blob = new Blob([css], { type: 'text/css' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'eraya-theme.css';
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+        
+        // Load theme on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadCurrentTheme();
+            
+            // Load saved theme if exists
+            const savedTheme = localStorage.getItem('eraya-theme');
+            if (savedTheme) {
+                const theme = JSON.parse(savedTheme);
+                const root = document.documentElement;
+                
+                Object.keys(theme).forEach(prop => {
+                    root.style.setProperty(prop, theme[prop]);
+                });
+                
+                updateDerivedColors();
+                updateInputs();
+            }
+        });
+    </script>
+</body>
+</html>

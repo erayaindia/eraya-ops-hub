@@ -25,10 +25,25 @@ DEFAULT_USER_ID = "default_user"
 def get_encryption_key():
     """Generate or get encryption key for sensitive data"""
     key = os.getenv("SHOPIFY_ENCRYPTION_KEY")
+    
+    # If no key or invalid key, generate a new one
     if not key:
         key = Fernet.generate_key().decode()
         print(f"⚠️  Generated new encryption key. Add SHOPIFY_ENCRYPTION_KEY={key} to your .env file")
-    return key.encode() if isinstance(key, str) else key
+        return key.encode()
+    
+    # Try to validate the existing key
+    try:
+        # Test if the key is valid by trying to create a Fernet instance
+        test_cipher = Fernet(key.encode())
+        return key.encode()
+    except Exception as e:
+        print(f"⚠️  Invalid SHOPIFY_ENCRYPTION_KEY detected: {e}")
+        print("🔧 Generating new valid key...")
+        new_key = Fernet.generate_key().decode()
+        print(f"✅ New key generated: SHOPIFY_ENCRYPTION_KEY={new_key}")
+        print("📝 Please update your .env file with this new key")
+        return new_key.encode()
 
 ENCRYPTION_KEY = get_encryption_key()
 cipher_suite = Fernet(ENCRYPTION_KEY)
@@ -165,7 +180,6 @@ def get_shopify_config(user_id: str) -> Dict:
             return {"success": False, "error": "No configuration found"}
     except Exception as e:
         error_msg = str(e)
-        print(f"Error getting Shopify config: {e}")
         if "Could not find the table" in error_msg:
             return {"success": False, "error": "Database tables not set up. Please run the SQL setup script in Supabase."}
         return {"success": False, "error": str(e)}

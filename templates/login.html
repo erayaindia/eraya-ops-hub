@@ -3,58 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login - Eraya Style Order Processor</title>
+    <title>Eraya Style - Login</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'glass': 'rgba(255, 255, 255, 0.1)',
-                        'glass-border': 'rgba(255, 255, 255, 0.2)'
-                    }
-                }
-            }
-        }
-    </script>
     <style>
         body {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #581c87 100%);
             min-height: 100vh;
-            font-family: 'Inter', sans-serif;
         }
         .glass {
-            background: rgba(255, 255, 255, 0.1);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
         .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 0.75rem 1.5rem;
-            border-radius: 0.5rem;
-            font-weight: 600;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
             transition: all 0.3s ease;
         }
         .btn-primary:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
             transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
         }
         .input-field {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            color: white;
-            padding: 0.75rem 1rem;
-            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             transition: all 0.3s ease;
         }
         .input-field:focus {
-            outline: none;
-            border-color: rgba(255, 255, 255, 0.5);
-            box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
-        }
-        .input-field::placeholder {
-            color: rgba(255, 255, 255, 0.7);
+            border-color: #3b82f6;
+            background: rgba(255, 255, 255, 0.08);
         }
     </style>
 </head>
@@ -72,18 +48,21 @@
         <!-- Login Form -->
         <div class="glass rounded-2xl p-8 shadow-2xl">
             <form id="loginForm" class="space-y-6">
-                <!-- Username Field -->
+                <!-- CSRF Token (Hidden) -->
+                <input type="hidden" id="csrf_token" name="csrf_token" value="{{ csrf_token }}">
+                
+                <!-- Email Field -->
                 <div>
-                    <label for="username" class="block text-sm font-medium text-white/90 mb-2">
-                        Username
+                    <label for="email" class="block text-sm font-medium text-white/90 mb-2">
+                        Email
                     </label>
                     <input 
-                        type="text" 
-                        id="username" 
-                        name="username" 
+                        type="email" 
+                        id="email" 
+                        name="email"
                         required
-                        class="input-field w-full"
-                        placeholder="Enter your username"
+                        class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/50 focus:outline-none"
+                        placeholder="Enter your email"
                     >
                 </div>
 
@@ -97,7 +76,7 @@
                         id="password" 
                         name="password" 
                         required
-                        class="input-field w-full"
+                        class="input-field w-full px-4 py-3 rounded-xl text-white placeholder-white/50 focus:outline-none"
                         placeholder="Enter your password"
                     >
                 </div>
@@ -108,12 +87,13 @@
                         <input type="checkbox" id="remember_me" name="remember_me" class="mr-2">
                         <span class="text-sm text-white/80">Remember me</span>
                     </label>
+                    <a href="/request-password-reset" class="text-sm font-medium text-white/80 hover:underline">Forgot Password?</a>
                 </div>
 
                 <!-- Submit Button -->
                 <button 
                     type="submit" 
-                    class="btn-primary w-full py-3 text-lg"
+                    class="btn-primary w-full py-3 px-4 rounded-xl text-white font-semibold text-lg"
                     id="loginBtn"
                 >
                     Sign In
@@ -136,9 +116,10 @@
         document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const username = document.getElementById('username').value;
+            const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const rememberMe = document.getElementById('remember_me').checked;
+            const csrfToken = document.getElementById('csrf_token').value;
             const loginBtn = document.getElementById('loginBtn');
             const errorMessage = document.getElementById('errorMessage');
             
@@ -152,9 +133,10 @@
             try {
                 // Create form data
                 const formData = new FormData();
-                formData.append('username', username);
+                formData.append('email', email);
                 formData.append('password', password);
                 formData.append('remember_me', rememberMe);
+                formData.append('csrf_token', csrfToken);
                 
                 // Send login request
                 const response = await fetch('/api/auth/login', {
@@ -180,28 +162,18 @@
                 }
                 
             } catch (error) {
-                console.error('Login error:', error);
-                
                 // Show error message
                 errorMessage.textContent = error.message || 'Login failed. Please try again.';
                 errorMessage.classList.remove('hidden');
                 
                 // Reset button
-                loginBtn.disabled = false;
                 loginBtn.textContent = 'Sign In';
+                loginBtn.disabled = false;
             }
         });
-        
-        // Add some visual feedback for input fields
-        document.querySelectorAll('.input-field').forEach(input => {
-            input.addEventListener('focus', function() {
-                this.parentElement.classList.add('scale-105');
-            });
-            
-            input.addEventListener('blur', function() {
-                this.parentElement.classList.remove('scale-105');
-            });
-        });
+
+        // Auto-focus first input
+        document.getElementById('email').focus();
     </script>
 </body>
 </html>

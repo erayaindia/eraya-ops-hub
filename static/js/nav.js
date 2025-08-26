@@ -1,6 +1,60 @@
 // Exact sidebar JavaScript from /hub
 let sidebarCollapsed = false;
 
+// Logout function
+async function logout() {
+    const logoutBtn = document.getElementById('logoutBtn');
+    
+    try {
+        // Show loading state
+        if (logoutBtn) {
+            logoutBtn.style.opacity = '0.6';
+            logoutBtn.style.pointerEvents = 'none';
+            const iconElement = logoutBtn.querySelector('.sidebar-icon');
+            const textElement = logoutBtn.querySelector('.sidebar-text');
+            if (iconElement) iconElement.textContent = '⏳';
+            if (textElement) textElement.textContent = 'Logging out...';
+        }
+        
+        const response = await fetch('/api/auth/logout', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+        
+        if (response.ok) {
+            // Clear any stored session data
+            localStorage.removeItem('session_id');
+            sessionStorage.clear();
+            
+            // Show success state briefly
+            if (logoutBtn) {
+                const iconElement = logoutBtn.querySelector('.sidebar-icon');
+                const textElement = logoutBtn.querySelector('.sidebar-text');
+                if (iconElement) iconElement.textContent = '✓';
+                if (textElement) textElement.textContent = 'Success!';
+            }
+            
+            // Show logout message
+            console.log('Logout successful');
+            
+            // Redirect to login page after brief delay
+            setTimeout(() => {
+                window.location.href = '/login';
+            }, 500);
+        } else {
+            console.error('Logout failed');
+            // Still redirect to login page even if logout API fails
+            window.location.href = '/login';
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        // Still redirect to login page even if there's an error
+        window.location.href = '/login';
+    }
+}
+
 function toggleSidebar() {
     if (window.innerWidth >= 768) {
         // Desktop behavior

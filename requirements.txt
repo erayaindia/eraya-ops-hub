@@ -38,8 +38,13 @@ html2image==2.0.5
 # zipstream-ng==1.3.1  # Removed for Windows compatibility
 
 # Supabase client and password hashing
-supabase==2.10.0
+supabase>=2.7.0
+postgrest>=0.10.9
 argon2-cffi==25.1.0
 
 # Encryption for secure data storage
 cryptography==42.0.7
+
+# Security dependencies
+slowapi==0.1.9  # Rate limiting
+itsdangerous==2.1.2  # CSRF tokens (already used for sessions)

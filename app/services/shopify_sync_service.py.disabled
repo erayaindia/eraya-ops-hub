@@ -65,10 +65,12 @@ class ShopifySyncService:
             error_msg = str(e)
             if "Could not find the table" in error_msg:
                 logger.warning("⚠️ Shopify tables not found. Please run the SQL setup script in Supabase.")
+            elif "No configuration found" in error_msg:
+                # This is normal - no Shopify store configured yet
+                logger.debug("ℹ️ No Shopify configuration found. This is normal for new installations.")
             else:
                 # Only log actual errors, not "no config found" messages
-                if "No configuration found" not in error_msg:
-                    logger.error(f"Error in sync: {e}")
+                logger.error(f"Error in sync: {e}")
     
     async def _sync_user_orders(self, user_id: str) -> Dict:
         """Sync orders for a specific user"""
