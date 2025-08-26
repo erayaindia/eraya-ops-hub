@@ -15,5 +15,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Render sets $PORT. Use shell form so $PORT expands.
-CMD sh -c "uvicorn app:app --host 0.0.0.0 --port ${PORT:-10000}"
+# Start the app using the factory pattern
+CMD ["uvicorn", "app.factory:create_app", "--factory", "--host", "0.0.0.0", "--port", "8000"]
